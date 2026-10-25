@@ -88,7 +88,9 @@ func _ready() -> void:
 	_bar.top_level = true
 	_bar.draw.connect(_draw_bar)
 	add_child(_bar)
-
+	var crosshair := Crosshair.new()
+	crosshair.player = self
+	add_child(crosshair)
 
 func _draw_bar() -> void:
 	var origin := Vector2(-BAR_SIZE.x / 2.0, -RADIUS - 18.0)

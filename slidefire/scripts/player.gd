@@ -21,6 +21,9 @@ var grenade_left := 0.0
 var _bar: Node2D
 var health := 100.0
 var _cooldown := 0.0
+var _hold_time := 0.0
+
+const HOLD_DELAY := 0.4
 
 
 func take_damage(amount: float) -> void:
@@ -105,20 +108,26 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	_cooldown -= delta
+	if Input.is_action_pressed("shoot"):
+		_hold_time += delta
+	else:
+		_hold_time = 0.0
+	# Po przytrzymaniu LPM: +50% szybkostrzelności, ale pociski mają 30% siły.
+	var rapid := _hold_time >= HOLD_DELAY
 	if Input.is_action_pressed("shoot") and _cooldown <= 0.0 and aim != Vector2.ZERO:
-		_shoot(aim.normalized())
-		_cooldown = 1.0 / fire_rate
+		_shoot(aim.normalized(), 0.3 if rapid else 1.0)
+		_cooldown = 1.0 / (fire_rate * (1.5 if rapid else 1.0))
 	grenade_left = maxf(grenade_left - delta, 0.0)
 	if Input.is_action_just_pressed("grenade") and grenade_left <= 0.0:
 		Grenade.throw_at(get_parent(), global_position, get_global_mouse_position())
 		grenade_left = GRENADE_COOLDOWN
 
 
-func _shoot(direction: Vector2) -> void:
+func _shoot(direction: Vector2, power := 1.0) -> void:
 	var bullet := Bullet.new()
 	bullet.position = position + direction * (RADIUS + 14.0)
 	bullet.velocity = direction * bullet_speed
-	bullet.damage = bullet_damage
+	bullet.damage = bullet_damage * power
 	bullet.target_layer = 8
 	bullet.add_to_group("player_bullets")
 	get_parent().add_child(bullet)

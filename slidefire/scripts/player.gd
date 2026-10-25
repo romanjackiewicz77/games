@@ -26,6 +26,9 @@ func take_damage(amount: float) -> void:
 	health = clampf(health - amount, 0.0, max_health)
 	health_changed.emit(health, max_health)
 	_bar.queue_redraw()
+	DamageNumber.spawn(get_parent(), global_position, amount, Color(1.0, 0.3, 0.3))
+	self_modulate = Color(3, 1.2, 1.2)
+	create_tween().tween_property(self, "self_modulate", Color.WHITE, 0.2)
 	if health <= 0.0:
 		died.emit()
 

@@ -8,6 +8,9 @@ func _ready() -> void:
 	layer = 10
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(MenuArt.new())
+	var menu_music := Music.new()
+	menu_music.menu = true
+	add_child(menu_music)
 	var bg := ColorRect.new()
 	bg.color = Color(0.03, 0.04, 0.07, 0.4)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -60,7 +63,7 @@ func _ready() -> void:
 		"STEROWANIE",
 		"WSAD / strzałki – ruch,  mysz – celowanie,  spacja – pauza",
 		"LPM – strzał z karabinu (przytrzymaj dłużej niż 0,4 s: super strzelanie",
-		"przez maks. 5 s, +50% szybkości, pociski 30% siły, odnowienie 15 s)",
+		"przez maks. 5 s, +50% szybkości, pociski 40% siły, odnowienie 15 s)",
 		"PPM – granat z falą uderzeniową (2 rzuty, potem 4 s przerwy)",
 		"",
 		"FALE",

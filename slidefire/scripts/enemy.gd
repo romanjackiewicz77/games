@@ -24,15 +24,15 @@ const BAR_SIZE := Vector2(40, 6)
 const KINDS := {
 	Kind.AMATEUR: {
 		"name": "amator", "speed": 150.0, "radius": 14.0, "color": Color(0.95, 0.8, 0.2),
-		"forget": 0.3, "slow": 0.3, "dodge": 0.0, "hide": 0.15, "interval": 0.8,
+		"forget": 0.3, "slow": 0.3, "dodge": 0.0, "hide": 0.15, "interval": 0.8, "dmg": 10.0,
 	},
 	Kind.AVERAGE: {
 		"name": "średniak", "speed": 290.0, "radius": 12.0, "color": Color(0.95, 0.5, 0.15),
-		"forget": 0.15, "slow": 0.0, "dodge": 0.4, "hide": 0.85, "interval": 0.55,
+		"forget": 0.15, "slow": 0.0, "dodge": 0.4, "hide": 0.85, "interval": 0.55, "dmg": 14.0,
 	},
 	Kind.PRO: {
 		"name": "zawodowiec", "speed": 320.0, "radius": 10.0, "color": Color(0.65, 0.15, 0.8),
-		"forget": 0.0, "slow": 0.0, "dodge": 0.75, "hide": 1.0, "interval": 0.4,
+		"forget": 0.0, "slow": 0.0, "dodge": 0.75, "hide": 1.0, "interval": 0.4, "dmg": 18.0,
 	},
 }
 
@@ -87,6 +87,7 @@ func setup(k: Kind) -> void:
 	speed = p["speed"]
 	radius = p["radius"]
 	body_color = p["color"]
+	bullet_damage = p["dmg"]
 	forget_chance = p["forget"]
 	slow_chance = p["slow"]
 	dodge_chance = p["dodge"]

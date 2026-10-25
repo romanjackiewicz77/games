@@ -10,42 +10,58 @@ const THIRDS := [3, 4, 4, 4]
 const ARP := [0, 1, 2, 1, 0, 2, 1, 2]
 
 static var _stream: AudioStreamWAV
+static var _menu_stream: AudioStreamWAV
+
+## Menu variant: slower, no snare, softer; plays even while the game tree is paused.
+var menu := false
 
 var _thread: Thread
 var _player: AudioStreamPlayer
 
 
 func _ready() -> void:
-	if _stream != null:
-		_start(_stream)
+	if menu:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+	var cached := _menu_stream if menu else _stream
+	if cached != null:
+		_start(cached)
 		return
 	_thread = Thread.new()
-	_thread.start(_build_track)
+	_thread.start(_build_track.bind(menu))
 
 
 func _process(_delta: float) -> void:
 	if _thread != null and not _thread.is_alive():
-		_stream = _thread.wait_to_finish()
-		_thread = null
-		_start(_stream)
+		_finish()
 
 
 func _exit_tree() -> void:
 	if _thread != null:
-		_stream = _thread.wait_to_finish()
+		_thread.wait_to_finish()
 		_thread = null
+
+
+func _finish() -> void:
+	var built: AudioStreamWAV = _thread.wait_to_finish()
+	_thread = null
+	if menu:
+		_menu_stream = built
+	else:
+		_stream = built
+	_start(built)
 
 
 func _start(stream: AudioStreamWAV) -> void:
 	_player = AudioStreamPlayer.new()
 	_player.stream = stream
-	_player.volume_db = VOLUME_DB
+	_player.volume_db = VOLUME_DB - (3.0 if menu else 0.0)
 	add_child(_player)
 	_player.play()
 
 
-static func _build_track() -> AudioStreamWAV:
-	var step := int(RATE * 60.0 / BPM / 4.0)
+static func _build_track(menu_variant := false) -> AudioStreamWAV:
+	var bpm := 96.0 if menu_variant else BPM
+	var step := int(RATE * 60.0 / bpm / 4.0)
 	var steps := 128
 	var n := step * steps
 	var buf := PackedFloat32Array()
@@ -59,17 +75,18 @@ static func _build_track() -> AudioStreamWAV:
 		var third: int = THIRDS[chord]
 		var pos := s % 16
 		var at := s * step
-		if pos % 4 == 0:
+		if pos % 4 == 0 and (not menu_variant or pos % 8 == 0):
 			_kick(buf, at, n)
-		if pos == 4 or pos == 12:
+		if not menu_variant and (pos == 4 or pos == 12):
 			_snare(buf, at, n, rng)
-		if pos % 2 == 0:
+		if not menu_variant and pos % 2 == 0:
 			_hat(buf, at, n, rng, 0.05 if pos % 4 == 0 else 0.09)
 		if pos % 2 == 0 or pos == 7 or pos == 15:
 			_bass(buf, at, n, root)
 		var semis := [0, third, 7]
 		var tone: int = semis[ARP[s % ARP.size()]]
-		_pluck(buf, at, n, root * 4.0 * pow(2.0, tone / 12.0), 0.06)
+		if not menu_variant or pos % 2 == 0:
+			_pluck(buf, at, n, root * 4.0 * pow(2.0, tone / 12.0), 0.06)
 	var peak := 0.001
 	for v in buf:
 		peak = maxf(peak, absf(v))

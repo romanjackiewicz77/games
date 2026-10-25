@@ -6,7 +6,7 @@ extends CharacterBody2D
 @export var friction := 700.0
 @export var fire_rate := 8.0
 @export var bullet_speed := 900.0
-@export var bullet_damage := 14.0
+@export var bullet_damage := 25.0
 @export var max_health := 100.0
 
 signal health_changed(current: float, maximum: float)
@@ -145,7 +145,7 @@ func _physics_process(delta: float) -> void:
 	_cooldown -= delta
 	var holding := Input.is_action_pressed("shoot")
 	_hold_time = _hold_time + delta if holding else 0.0
-	# Super strzelanie: +50% szybkostrzelności, pociski 30% siły; max 5 s, potem 15 s odnawiania.
+	# Super strzelanie: +50% szybkostrzelności, pociski 40% siły; max 5 s, potem 15 s odnawiania.
 	var rapid := holding and _hold_time >= HOLD_DELAY and _rapid_cooldown <= 0.0
 	if rapid:
 		_rapid_used += delta
@@ -159,7 +159,7 @@ func _physics_process(delta: float) -> void:
 		_bar.queue_redraw()
 	rapid_active = rapid
 	if holding and _cooldown <= 0.0 and aim != Vector2.ZERO:
-		_shoot(aim.normalized(), 0.3 if rapid else 1.0)
+		_shoot(aim.normalized(), 0.4 if rapid else 1.0)
 		_cooldown = 1.0 / (fire_rate * (1.5 if rapid else 1.0))
 	if grenade_left > 0.0:
 		grenade_left = maxf(grenade_left - delta, 0.0)

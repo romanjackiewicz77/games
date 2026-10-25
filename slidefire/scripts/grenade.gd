@@ -10,8 +10,8 @@ const KNOCKBACK := 750.0
 
 const ENEMY_SPEED := 280.0
 const ENEMY_RADIUS := 130.0
-const ENEMY_MAX_DAMAGE := 35.0
-const ENEMY_MIN_DAMAGE := 15.0
+const ENEMY_MAX_DAMAGE := 50.0
+const ENEMY_MIN_DAMAGE := 25.0
 
 var target := Vector2.ZERO
 ## Granat rzucony przez przeciwnika rani tylko gracza i leci wolniej.

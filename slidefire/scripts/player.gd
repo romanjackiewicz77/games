@@ -13,6 +13,7 @@ var _cooldown := 0.0
 
 func _ready() -> void:
 	InputSetup.ensure()
+	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	collision_layer = 2
 	collision_mask = 1 | 4
 	var shape := CollisionShape2D.new()

@@ -1,11 +1,10 @@
 # games
 
-Strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godotengine.org/) 4 (.NET / C#).
+Strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godotengine.org/) 4 (GDScript – język o składni zbliżonej do Pythona).
 
 ## Wymagania
 
-- Godot 4.3+ w wersji **.NET** (Mono)
-- .NET SDK 8
+- Godot 4.3+
 
 ## Uruchomienie
 
@@ -20,7 +19,7 @@ Strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godotengine.org/) 4
 
 ## Struktura
 
-- `scripts/Player.cs` – ruch z przyspieszeniem/tarciem, celowanie, strzelanie
-- `scripts/Bullet.cs` – pocisk, znika po trafieniu w ścianę lub po czasie
-- `scripts/Level.cs` – korytarze budowane z układu ASCII (`Layout`), kolizje ścian
-- `scripts/InputSetup.cs` – rejestracja akcji wejścia
+- `scripts/player.gd` – ruch z przyspieszeniem/tarciem, celowanie, strzelanie
+- `scripts/bullet.gd` – pocisk, znika po trafieniu w ścianę lub po czasie
+- `scripts/level.gd` – korytarze budowane z układu ASCII (`LAYOUT`), kolizje ścian
+- `scripts/input_setup.gd` – rejestracja akcji wejścia

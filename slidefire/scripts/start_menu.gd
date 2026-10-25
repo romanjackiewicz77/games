@@ -73,7 +73,16 @@ func _ready() -> void:
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
 	box.add_child(help)
-	scores_button.pressed.connect(func() -> void:
+
+	var footer := Label.new()
+	footer.text = "Autorzy: Roman Jackiewicz oraz GitHub Copilot (Claude Sonnet 5.5)  •  25.10.2026"
+	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	footer.offset_top = -40
+	footer.offset_bottom = -12
+	footer.add_theme_font_size_override("font_size", 16)
+	footer.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+	add_child(footer)	scores_button.pressed.connect(func() -> void:
 		scores.text = _scores_text()
 		scores.visible = not scores.visible
 		help.visible = not scores.visible)

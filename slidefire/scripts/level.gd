@@ -102,6 +102,7 @@ func _start_wave() -> void:
 		_director.register(enemy)
 		_alive += 1
 		enemy.died.connect(_on_enemy_died)
+	_hud.set_remaining(_alive)
 
 
 ## Skład fali: 1–4 amatorzy/średniacy (więcej amatorów), 5–9 amatorzy/średniacy + 1 zawodowiec,
@@ -127,7 +128,7 @@ func _wave_kinds(wave: int) -> Array:
 func _free_spot_near(spot: Vector2) -> Vector2:
 	for attempt in 40:
 		var p := spot + Vector2.from_angle(randf() * TAU) * randf_range(24.0, 6.0 * tile)
-		if is_free(p) and not _enemy_near(p, 32.0):
+		if is_free(p) and not _enemy_near(p, 32.0) and not find_path(spot, p).is_empty():
 			return p
 	return spot
 
@@ -141,6 +142,7 @@ func _enemy_near(p: Vector2, radius: float) -> bool:
 
 func _on_enemy_died() -> void:
 	_alive -= 1
+	_hud.set_remaining(_alive)
 	if _alive > 0:
 		return
 	_wins += 1

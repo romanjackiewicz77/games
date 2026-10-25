@@ -52,6 +52,8 @@ var _dodge_seen := {}
 var _dodge_wanted := false
 var _knock := Vector2.ZERO
 var _knock_time := 0.0
+var _alone_hiding := 0.0
+var _desperate := false
 
 const KNOCK_DURATION := 0.35
 
@@ -170,7 +172,7 @@ func take_damage(amount: float) -> void:
 
 
 func _is_low() -> bool:
-	return health <= max_health * low_health_ratio
+	return health <= max_health * low_health_ratio and not _desperate
 
 
 func apply_shockwave(dir: Vector2, strength: float) -> void:
@@ -181,6 +183,11 @@ func apply_shockwave(dir: Vector2, strength: float) -> void:
 func _physics_process(delta: float) -> void:
 	_bar.global_position = global_position
 	_talk(delta)
+	# Ostatni ranny przeciwnik nie chowa się w nieskończoność, żeby fala mogła się skończyć.
+	if _is_low() and director.enemies.size() <= 1:
+		_alone_hiding += delta
+		if _alone_hiding > 10.0:
+			_desperate = true
 	if _knock_time > 0.0:
 		_knock_time -= delta
 		velocity = _knock * clampf(_knock_time / KNOCK_DURATION, 0.0, 1.0)

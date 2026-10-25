@@ -11,6 +11,7 @@ var _message: Label
 var _stats: Label
 var _countdown: Label
 var _grenade: Label
+var _remaining: Label
 var _player: Player
 
 
@@ -25,6 +26,10 @@ func _process(_delta: float) -> void:
 
 func set_stats(wins: int, wave: int, damage: float) -> void:
 	_stats.text = "Wygrane walki: %d   Fala: %d   Obrażenia: %.1f" % [wins, wave, damage]
+
+
+func set_remaining(count: int) -> void:
+	_remaining.text = "Pozostali przeciwnicy: %d" % count
 
 
 func show_countdown(text: String) -> void:
@@ -50,6 +55,10 @@ func _ready() -> void:
 	_grenade = Label.new()
 	_grenade.position = Vector2(20, 72)
 	add_child(_grenade)
+
+	_remaining = Label.new()
+	_remaining.position = Vector2(20, 96)
+	add_child(_remaining)
 
 	_countdown = Label.new()
 	_countdown.visible = false

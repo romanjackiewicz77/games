@@ -47,4 +47,4 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 4.0, Color.YELLOW)
+	draw_circle(Vector2.ZERO, 4.0, Color.RED)

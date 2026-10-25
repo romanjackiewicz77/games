@@ -55,4 +55,4 @@ func _shoot(direction: Vector2) -> void:
 
 func _draw() -> void:
 	draw_circle(Vector2.ZERO, RADIUS, Color(0.3, 0.7, 1.0))
-	draw_line(Vector2.ZERO, Vector2(RADIUS + 12.0, 0.0), Color.WHITE, 5.0)
+	draw_line(Vector2.ZERO, Vector2(RADIUS + 12.0, 0.0), Color.BLACK, 5.0)

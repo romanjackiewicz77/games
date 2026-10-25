@@ -21,9 +21,9 @@ func _ready() -> void:
 	add_child(box)
 
 	var title := Label.new()
-	title.text = "SLIDEFIRE"
+	title.text = "SWAT INTRUDERS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 110)
+	title.add_theme_font_size_override("font_size", 96)
 	title.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
 	title.add_theme_color_override("font_outline_color", Color(0.5, 0.1, 0.05))
 	title.add_theme_constant_override("outline_size", 12)

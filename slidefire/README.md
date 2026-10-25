@@ -1,6 +1,6 @@
-# Slidefire
+# SWAT Intruders
 
-Slidefire – strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godotengine.org/) 4 (GDScript – język o składni zbliżonej do Pythona).
+SWAT Intruders – strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godotengine.org/) 4 (GDScript – język o składni zbliżonej do Pythona).
 
 ## Wymagania
 

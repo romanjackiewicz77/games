@@ -1,7 +1,7 @@
 class_name SpeechBubble
 extends Node2D
 
-const FONT_SIZE := 14
+const FONT_SIZE := 16
 const SHOW_TIME := 2.2
 
 var _text := ""

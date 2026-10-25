@@ -368,6 +368,7 @@ func _shoot(to_player: Vector2) -> void:
 	bullet.target_layer = 2
 	bullet.color = Color(1.0, 0.55, 0.1)
 	get_parent().add_child(bullet)
+	MuzzleFlash.spawn(get_parent(), position + dir * (radius + 10.0), dir, bullet.color, 0.9)
 	Sfx.play(get_parent(), "shot_enemy", global_position, -9.0)
 
 

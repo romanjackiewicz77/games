@@ -182,6 +182,7 @@ func _shoot(direction: Vector2, power := 1.0) -> void:
 		bullet.color = Bullet.RAPID_COLOR
 	bullet.add_to_group("player_bullets")
 	get_parent().add_child(bullet)
+	MuzzleFlash.spawn(get_parent(), position + direction * (RADIUS + 10.0), direction, bullet.color, 1.0 if power >= 1.0 else 0.8)
 	Sfx.play(get_parent(), "shot_player", global_position, -6.0)
 
 

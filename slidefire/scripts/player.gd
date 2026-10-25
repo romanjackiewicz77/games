@@ -30,9 +30,7 @@ func _physics_process(delta: float) -> void:
 	if aim != Vector2.ZERO:
 		rotation = aim.angle()
 
-	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	# Ruch względem lufy: W = do przodu (kierunek celowania), S = do tyłu, A/D = uniki w bok.
-	var dir := Vector2(-input.y, input.x).rotated(rotation)
+	var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	# Poślizg: przyspieszenie przy ruchu, tarcie po puszczeniu klawiszy.
 	if dir != Vector2.ZERO:
 		velocity = velocity.move_toward(dir * max_speed, acceleration * delta)

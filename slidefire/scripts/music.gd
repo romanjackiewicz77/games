@@ -4,7 +4,7 @@ extends Node
 
 const RATE := 22050
 const BPM := 138.0
-const VOLUME_DB := -17.0
+const VOLUME_DB := -15.8
 const ROOTS := [55.0, 43.65, 65.41, 49.0]
 const THIRDS := [3, 4, 4, 4]
 const ARP := [0, 1, 2, 1, 0, 2, 1, 2]

@@ -39,6 +39,7 @@ const KINDS := {
 var kind := Kind.AMATEUR
 var radius := 11.0
 var body_color := Color(0.85, 0.25, 0.25)
+var _spawn_shield := 5.0
 var forget_chance := 0.0
 var slow_chance := 0.0
 var dodge_chance := 0.5
@@ -163,7 +164,7 @@ func _talk(delta: float) -> void:
 
 
 func take_damage(amount: float) -> void:
-	if health <= 0.0:
+	if health <= 0.0 or _spawn_shield > 0.0:
 		return
 	health = clampf(health - amount, 0.0, max_health)
 	health_changed.emit(health, max_health)
@@ -196,6 +197,9 @@ func apply_shockwave(dir: Vector2, strength: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _spawn_shield > 0.0:
+		_spawn_shield -= delta
+		queue_redraw()
 	_bar.global_position = global_position
 	_stuck_check -= delta
 	if _stuck_check <= 0.0:
@@ -373,7 +377,12 @@ func _shoot(to_player: Vector2) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, radius, body_color)
+	var col := body_color
+	if _spawn_shield > 0.0:
+		var on := int(_spawn_shield * 8.0) % 2 == 0
+		col = Color(0.6, 0.9, 1.0) if on else Color(1, 1, 1, 0.35)
+		draw_arc(Vector2.ZERO, radius + 5.0, 0.0, TAU, 24, Color(0.6, 0.9, 1.0, 0.9 if on else 0.4), 2.0)
+	draw_circle(Vector2.ZERO, radius, col)
 	draw_line(Vector2.ZERO, Vector2(radius + 12.0, 0.0), Color.BLACK, 5.0)
 
 

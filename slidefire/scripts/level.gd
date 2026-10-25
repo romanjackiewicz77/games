@@ -1,7 +1,7 @@
 extends Node2D
 
 ## Plik mapy (tekst: '#' ściana, '.' podłoga, 'P' start; linie od ';' to nagłówek).
-@export_file("*.txt") var map_path := "res://maps/map_01.txt"
+@export_file("*.txt") var map_path := "res://maps/map_02.txt"
 ## Rozmiar kafelka w pikselach gry (kafelek mapy = 12 cm).
 @export var tile := 16
 

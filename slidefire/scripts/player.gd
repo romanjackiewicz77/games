@@ -14,7 +14,7 @@ var _cooldown := 0.0
 func _ready() -> void:
 	InputSetup.ensure()
 	collision_layer = 2
-	collision_mask = 1
+	collision_mask = 1 | 4
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = RADIUS

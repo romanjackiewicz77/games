@@ -7,6 +7,22 @@ extends Node2D
 
 var _rows: PackedStringArray = []
 var _wall_rects: Array[Rect2i] = []
+var _furniture_rects: Array[Rect2i] = []
+
+
+# Warstwa 1 = ściany (blokują gracza i pociski), 4 = meble (blokują tylko gracza, pociski je przebijają).
+func _add_body(rects: Array[Rect2i], layer: int) -> void:
+	var body := StaticBody2D.new()
+	body.collision_layer = layer
+	body.collision_mask = 0
+	add_child(body)
+	for r in rects:
+		var shape := CollisionShape2D.new()
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(r.size * tile)
+		shape.shape = rect
+		shape.position = Vector2(r.position * tile) + rect.size / 2.0
+		body.add_child(shape)
 
 
 func _ready() -> void:
@@ -15,18 +31,10 @@ func _ready() -> void:
 		push_error("Nie można wczytać mapy: %s" % map_path)
 		return
 
-	_wall_rects = _merge_walls(_rows)
-	var walls := StaticBody2D.new()
-	walls.collision_layer = 1
-	walls.collision_mask = 0
-	add_child(walls)
-	for r in _wall_rects:
-		var shape := CollisionShape2D.new()
-		var rect := RectangleShape2D.new()
-		rect.size = Vector2(r.size * tile)
-		shape.shape = rect
-		shape.position = Vector2(r.position * tile) + rect.size / 2.0
-		walls.add_child(shape)
+	_wall_rects = _merge_walls(_rows, "#")
+	_furniture_rects = _merge_walls(_rows, "F")
+	_add_body(_wall_rects, 1)
+	_add_body(_furniture_rects, 4)
 
 	var player := Player.new()
 	player.position = _find_start()
@@ -55,7 +63,7 @@ func _find_start() -> Vector2:
 
 
 # Scala sąsiednie kafelki ścian w większe prostokąty (mniej kształtów kolizji).
-func _merge_walls(rows: PackedStringArray) -> Array[Rect2i]:
+func _merge_walls(rows: PackedStringArray, kind: String) -> Array[Rect2i]:
 	var result: Array[Rect2i] = []
 	var open_runs := {} # "x0,x1" -> indeks prostokąta w result, który można przedłużyć w dół
 	for y in rows.size():
@@ -63,11 +71,11 @@ func _merge_walls(rows: PackedStringArray) -> Array[Rect2i]:
 		var line := rows[y]
 		var x := 0
 		while x < line.length():
-			if line[x] != "#":
+			if line[x] != kind:
 				x += 1
 				continue
 			var x0 := x
-			while x < line.length() and line[x] == "#":
+			while x < line.length() and line[x] == kind:
 				x += 1
 			var key := "%d,%d" % [x0, x]
 			if open_runs.has(key):
@@ -88,3 +96,5 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 0, cols * tile, _rows.size() * tile), Color(0.1, 0.1, 0.12))
 	for r in _wall_rects:
 		draw_rect(Rect2(Vector2(r.position * tile), Vector2(r.size * tile)), Color(0.35, 0.35, 0.42))
+	for r in _furniture_rects:
+		draw_rect(Rect2(Vector2(r.position * tile), Vector2(r.size * tile)), Color(0.5, 0.35, 0.2))

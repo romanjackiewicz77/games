@@ -38,3 +38,7 @@ Kafelek mapy = 12 cm w rzeczywistości. Wymagania: Python 3 i `pip install -r to
 3. Popraw `maps/map_01.txt` ręcznie: `#` ściana, `.` podłoga, `P` start. Usuń fałszywe ściany
    (np. meble) i dodaj brakujące, potem powtórz krok 2.
 4. Plik mapy wczytuje `scripts/level.gd` (zmienna `map_path`).
+
+### Ręczne poprawki (kolorowanie podglądu)
+
+Pomaluj kopię `maps/map_01_preview.png` (np. jako `map_01_edit.png`) czystymi kolorami: zielony `#00FF00` = ściana, fioletowy `#FF00FF` = mebel (`F`: blokuje ruch, pociski przebijają z 15% szansą zatrzymania i tracą energię), żółty `#FFFF00` = podłoga. Potem: `python tools/apply_edits.py maps/map_01.txt maps/map_01_edit.png`.

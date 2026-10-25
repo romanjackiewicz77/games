@@ -13,7 +13,7 @@ Slidefire – strzelanka 2D z widokiem z góry, zrobiona w [Godot](https://godot
 
 ## Sterowanie
 
-- **WSAD** – ruch (z poślizgiem)
+- **WSAD** – ruch względem lufy (z poślizgiem): **W** do przodu (w stronę kursora), **S** do tyłu, **A/D** w bok
 - **Mysz** – celowanie
 - **LPM** – strzał w kierunku kursora
 

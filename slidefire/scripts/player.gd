@@ -26,17 +26,19 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var aim := get_global_mouse_position() - global_position
+	if aim != Vector2.ZERO:
+		rotation = aim.angle()
+
+	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	# Ruch względem lufy: W = do przodu (kierunek celowania), S = do tyłu, A/D = uniki w bok.
+	var dir := Vector2(-input.y, input.x).rotated(rotation)
 	# Poślizg: przyspieszenie przy ruchu, tarcie po puszczeniu klawiszy.
 	if dir != Vector2.ZERO:
 		velocity = velocity.move_toward(dir * max_speed, acceleration * delta)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 	move_and_slide()
-
-	var aim := get_global_mouse_position() - global_position
-	if aim != Vector2.ZERO:
-		rotation = aim.angle()
 
 	_cooldown -= delta
 	if Input.is_action_pressed("shoot") and _cooldown <= 0.0 and aim != Vector2.ZERO:

@@ -47,6 +47,8 @@ func take_damage(amount: float) -> void:
 		died.emit()
 
 
+## Czas przeżycia w sekundach (liczony tylko podczas gry, nie w pauzie).
+var survived := 0.0
 ## Nagroda za wygraną walkę: +5% maksymalnego życia, pełne leczenie i +10% obrażeń.
 func on_victory() -> void:
 	max_health *= 1.05
@@ -125,6 +127,8 @@ func _draw_rapid_indicator(origin: Vector2) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if health > 0.0:
+		survived += delta
 	_bar.global_position = global_position
 	var aim := get_global_mouse_position() - global_position
 	if aim != Vector2.ZERO:

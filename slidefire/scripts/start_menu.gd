@@ -29,15 +29,31 @@ func _ready() -> void:
 	title.add_theme_constant_override("outline_size", 12)
 	box.add_child(title)
 
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 20)
+	box.add_child(row)
+
 	var button := Button.new()
 	button.text = "START"
 	button.custom_minimum_size = Vector2(260, 70)
-	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	button.add_theme_font_size_override("font_size", 32)
 	button.pressed.connect(_on_pressed)
-	box.add_child(button)
+	row.add_child(button)
 	button.grab_focus()
 
+	var scores_button := Button.new()
+	scores_button.text = "WYNIKI"
+	scores_button.custom_minimum_size = Vector2(260, 70)
+	scores_button.add_theme_font_size_override("font_size", 32)
+	row.add_child(scores_button)
+
+	var scores := Label.new()
+	scores.visible = false
+	scores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	scores.add_theme_font_size_override("font_size", 24)
+	scores.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	box.add_child(scores)
 	var help := Label.new()
 	help.text = "\n".join([
 		"STEROWANIE",
@@ -57,7 +73,21 @@ func _ready() -> void:
 	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
 	box.add_child(help)
+	scores_button.pressed.connect(func() -> void:
+		scores.text = _scores_text()
+		scores.visible = not scores.visible
+		help.visible = not scores.visible)
 
+
+func _scores_text() -> String:
+	var lines := ["NAJLEPSZE WYNIKI (czas przeżycia)", ""]
+	var top := Scores.top(5)
+	if top.is_empty():
+		lines.append("Brak wyników – zagraj pierwszą grę!")
+	for i in top.size():
+		var s: Dictionary = top[i]
+		lines.append("%d.  %s   (fala %d,  %s)" % [i + 1, Scores.format_time(s["time"]), s["wave"], str(s["date"]).left(10)])
+	return "\n".join(lines)
 
 func _on_pressed() -> void:
 	started.emit()

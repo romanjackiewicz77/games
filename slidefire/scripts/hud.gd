@@ -98,7 +98,11 @@ func _draw_bar() -> void:
 	_bar.draw_rect(Rect2(Vector2(2, 2), Vector2((BAR_SIZE.x - 4) * ratio, BAR_SIZE.y - 4)), color)
 
 
+func set_death_text(text: String) -> void:
+	_message.text = text
+
+
 func _on_died() -> void:
 	_message.visible = true
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(3.0).timeout
 	get_tree().reload_current_scene()

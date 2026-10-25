@@ -62,6 +62,7 @@ func _ready() -> void:
 	_hud = Hud.new()
 	add_child(_hud)
 	_hud.bind(player)
+	player.died.connect(_on_player_died)
 	_build_navigation()
 	_director = Director.new()
 	add_child(_director)
@@ -80,10 +81,14 @@ func _ready() -> void:
 
 
 func _on_start_pressed() -> void:
-	skip_menu = true
 	get_tree().paused = false
 	_pause.enabled = true
 	_start_wave()
+
+
+func _on_player_died() -> void:
+	Scores.add(_player.survived, _wave)
+	_hud.set_death_text("Zginąłeś! Czas przeżycia: %s (fala %d)" % [Scores.format_time(_player.survived), _wave])
 
 func _start_wave() -> void:
 	if _spawn_points.is_empty():

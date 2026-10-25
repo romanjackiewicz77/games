@@ -24,6 +24,11 @@ var _cooldown := 0.0
 var _hold_time := 0.0
 
 const HOLD_DELAY := 0.4
+const RAPID_MAX := 5.0
+const RAPID_COOLDOWN := 15.0
+
+var _rapid_used := 0.0
+var _rapid_cooldown := 0.0
 
 
 func take_damage(amount: float) -> void:
@@ -91,6 +96,27 @@ func _draw_bar() -> void:
 	var ratio := clampf(health / max_health, 0.0, 1.0)
 	var color := Color(0.2, 0.8, 0.3).lerp(Color(0.9, 0.15, 0.15), 1.0 - ratio)
 	_bar.draw_rect(Rect2(origin + Vector2(1, 1), Vector2((BAR_SIZE.x - 2) * ratio, BAR_SIZE.y - 2)), color)
+	_draw_rapid_indicator(origin + Vector2(0, BAR_SIZE.y + 3.0))
+
+
+# Pasek super strzelania: czas, który został (żółty), albo odnawianie (szary) z licznikiem sekund.
+func _draw_rapid_indicator(origin: Vector2) -> void:
+	var size := Vector2(BAR_SIZE.x, 5.0)
+	var fill := 1.0
+	var color := Color(1.0, 0.8, 0.2)
+	var text := ""
+	if _rapid_cooldown > 0.0:
+		fill = 1.0 - _rapid_cooldown / RAPID_COOLDOWN
+		color = Color(0.55, 0.55, 0.6)
+		text = "%.1f s" % _rapid_cooldown
+	elif _rapid_used > 0.0:
+		fill = 1.0 - _rapid_used / RAPID_MAX
+		text = "%.1f s" % (RAPID_MAX - _rapid_used)
+	_bar.draw_rect(Rect2(origin, size), Color(0, 0, 0, 0.7))
+	_bar.draw_rect(Rect2(origin + Vector2.ONE, Vector2((size.x - 2.0) * fill, size.y - 2.0)), color)
+	if text != "":
+		var font := ThemeDB.fallback_font
+		_bar.draw_string(font, origin + Vector2(size.x + 4.0, 6.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 
 
 func _physics_process(delta: float) -> void:
@@ -108,13 +134,21 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	_cooldown -= delta
-	if Input.is_action_pressed("shoot"):
-		_hold_time += delta
-	else:
-		_hold_time = 0.0
-	# Po przytrzymaniu LPM: +50% szybkostrzelności, ale pociski mają 30% siły.
-	var rapid := _hold_time >= HOLD_DELAY
-	if Input.is_action_pressed("shoot") and _cooldown <= 0.0 and aim != Vector2.ZERO:
+	var holding := Input.is_action_pressed("shoot")
+	_hold_time = _hold_time + delta if holding else 0.0
+	# Super strzelanie: +50% szybkostrzelności, pociski 30% siły; max 5 s, potem 15 s odnawiania.
+	var rapid := holding and _hold_time >= HOLD_DELAY and _rapid_cooldown <= 0.0
+	if rapid:
+		_rapid_used += delta
+		if _rapid_used >= RAPID_MAX:
+			_rapid_used = 0.0
+			_rapid_cooldown = RAPID_COOLDOWN
+			rapid = false
+		_bar.queue_redraw()
+	elif _rapid_cooldown > 0.0:
+		_rapid_cooldown = maxf(_rapid_cooldown - delta, 0.0)
+		_bar.queue_redraw()
+	if holding and _cooldown <= 0.0 and aim != Vector2.ZERO:
 		_shoot(aim.normalized(), 0.3 if rapid else 1.0)
 		_cooldown = 1.0 / (fire_rate * (1.5 if rapid else 1.0))
 	grenade_left = maxf(grenade_left - delta, 0.0)

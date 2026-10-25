@@ -182,6 +182,13 @@ func _is_low() -> bool:
 	return health <= max_health * low_health_ratio and not _desperate
 
 
+func _all_remaining_low() -> bool:
+	for other in director.enemies:
+		if is_instance_valid(other) and other != self and not other._is_low():
+			return false
+	return true
+
+
 func apply_shockwave(dir: Vector2, strength: float) -> void:
 	_knock = dir * strength
 	_knock_time = KNOCK_DURATION
@@ -190,8 +197,8 @@ func apply_shockwave(dir: Vector2, strength: float) -> void:
 func _physics_process(delta: float) -> void:
 	_bar.global_position = global_position
 	_talk(delta)
-	# Ostatni ranny przeciwnik nie chowa się w nieskończoność, żeby fala mogła się skończyć.
-	if _is_low() and director.enemies.size() <= 1:
+	# Ranni przeciwnicy nie chowają się w nieskończoność, jeśli nikt zdrowy nie został (inaczej fala się nie kończy).
+	if _is_low() and _all_remaining_low():
 		_alone_hiding += delta
 		if _alone_hiding > 10.0:
 			_desperate = true

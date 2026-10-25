@@ -63,6 +63,7 @@ func _ready() -> void:
 	_countdown = Label.new()
 	_countdown.visible = false
 	_countdown.add_theme_font_size_override("font_size", 40)
+	_countdown.add_theme_color_override("font_color", Color(0.3, 1.0, 0.35))
 	_countdown.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_countdown.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_countdown.position.y = 60

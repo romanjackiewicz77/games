@@ -275,14 +275,14 @@ func _stage_move(to_player: Vector2, delta: float) -> Vector2:
 	return _follow_path_to(_stage_spot, delta)
 
 
-func _pick_stage_spot(to_player: Vector2) -> Vector2:
-	var back := -to_player.normalized()
-	var side := 0.9 if _group == 0 else -0.9
-	for reach in [380.0, 300.0, 220.0, 150.0]:
-		var spot: Vector2 = player.global_position + back.rotated(side) * reach + Vector2(randf_range(-30, 30), randf_range(-30, 30))
+func _pick_stage_spot(_to_player: Vector2) -> Vector2:
+	# Dwie grupy tuż przy miejscu pojawienia się: jedna z jednej, druga z drugiej strony.
+	var side := -1.0 if _group == 0 else 1.0
+	for reach in [110.0, 80.0, 50.0, 25.0]:
+		var spot: Vector2 = global_position + Vector2(randf_range(20, 70), side * reach + randf_range(-25, 25))
 		if level.is_free(spot):
 			return spot
-	return level._free_spot_near(global_position)
+	return global_position
 
 
 func _throw_grenade() -> void:

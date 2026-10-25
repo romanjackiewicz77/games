@@ -50,7 +50,60 @@ func _ready() -> void:
 	_bar.top_level = true
 	_bar.draw.connect(_draw_bar)
 	add_child(_bar)
+	_bubble = SpeechBubble.new()
+	_bubble.attach(self)
+	add_child(_bubble)
 	_strafe_dir = 1.0 if randf() < 0.5 else -1.0
+
+
+const LINES_TAUNT := [
+	"Poddaj się!",
+	"Zaraz Cię wykończę!",
+	"Nie uciekniesz!",
+	"To twój koniec!",
+	"Jesteś na przegranej pozycji!",
+	"Nie masz szans!",
+]
+const LINES_BEG := [
+	"Błagam, litości!",
+	"Nie strzelaj, proszę!",
+	"Już dość, poddaję się!",
+	"Daruj mi życie!",
+]
+const LINES_PRAISE := [
+	"Niezły strzał!",
+	"Celnie, muszę przyznać!",
+	"Dobrze mierzysz!",
+	"Ała! Ale celnie!",
+]
+const LINES_RALLY := [
+	"Atakujcie go!",
+	"Wszyscy naraz!",
+	"Dalej, dopadnijmy go!",
+	"Strzelajcie, nie czekajcie!",
+	"Osaczcie go!",
+]
+
+var _talk_timer := randf_range(1.5, 4.0)
+var _bubble: SpeechBubble
+
+
+func say(text: String) -> void:
+	if _bubble != null:
+		_bubble.say(text)
+
+
+func _talk(delta: float) -> void:
+	_talk_timer -= delta
+	if _talk_timer > 0.0:
+		return
+	_talk_timer = randf_range(4.0, 8.0)
+	if _is_low():
+		say(LINES_BEG.pick_random())
+	elif director != null and director.enemies.size() > 1 and randf() < 0.4:
+		say(LINES_RALLY.pick_random())
+	else:
+		say(LINES_TAUNT.pick_random())
 
 
 func take_damage(amount: float) -> void:
@@ -62,6 +115,8 @@ func take_damage(amount: float) -> void:
 	DamageNumber.spawn(get_parent(), global_position, amount, Color(1.0, 0.85, 0.2))
 	self_modulate = Color(3, 3, 3)
 	create_tween().tween_property(self, "self_modulate", Color.WHITE, 0.15)
+	if health > 0.0 and randf() < 0.3:
+		say(LINES_BEG.pick_random() if _is_low() else LINES_PRAISE.pick_random())
 	if health <= 0.0:
 		died.emit()
 		queue_free()
@@ -73,6 +128,7 @@ func _is_low() -> bool:
 
 func _physics_process(delta: float) -> void:
 	_bar.global_position = global_position
+	_talk(delta)
 	if player == null or not is_instance_valid(player) or player.health <= 0.0:
 		velocity = velocity.move_toward(Vector2.ZERO, 1500.0 * delta)
 		move_and_slide()

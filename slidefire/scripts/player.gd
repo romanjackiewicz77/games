@@ -45,6 +45,8 @@ func take_damage(amount: float) -> void:
 	create_tween().tween_property(self, "self_modulate", Color.WHITE, 0.2)
 	if health <= 0.0:
 		died.emit()
+		visible = false
+		collision_layer = 0
 
 
 ## Czas przeżycia w sekundach (liczony tylko podczas gry, nie w pauzie).
@@ -127,8 +129,10 @@ func _draw_rapid_indicator(origin: Vector2) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if health > 0.0:
-		survived += delta
+	if health <= 0.0:
+		rapid_active = false
+		return
+	survived += delta
 	_bar.global_position = global_position
 	var aim := get_global_mouse_position() - global_position
 	if aim != Vector2.ZERO:

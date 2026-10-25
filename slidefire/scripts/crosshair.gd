@@ -12,8 +12,9 @@ func _init() -> void:
 
 func _process(_delta: float) -> void:
 	var paused := get_tree().paused
-	visible = not paused
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if paused else Input.MOUSE_MODE_HIDDEN
+	var dead := player != null and is_instance_valid(player) and player.health <= 0.0
+	visible = not paused and not dead
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if paused or dead else Input.MOUSE_MODE_HIDDEN
 	if player == null or not is_instance_valid(player):
 		return
 	global_position = get_global_mouse_position()

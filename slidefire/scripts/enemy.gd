@@ -145,8 +145,48 @@ const LINES_RALLY := [
 	"Osaczcie go!",
 ]
 
+const LINES_KILL := [
+	"Lokator ubity!",
+	"Mieszkanie czyste. Lokator załatwiony.",
+	"Nikt tu już nie zamieszka... lokator wyeliminowany.",
+	"Koniec eksmisji, panie lokatorze!",
+	"Zgłaszam: lokator zneutralizowany. Salceson nasz!",
+]
+
+var _mourn := false
+var _mourn_center := Vector2.ZERO
+var _mourn_spot := Vector2.ZERO
+var _mourn_timer := 0.0
 var _talk_timer := randf_range(1.5, 4.0)
 var _bubble: SpeechBubble
+
+
+## After the player dies: gather in a circle around the blood stain and gloat.
+func start_mourn(center: Vector2, index: int, count: int) -> void:
+	_mourn = true
+	_mourn_center = center
+	_spawn_shield = 0.0
+	_flee_time = 0.0
+	var ring := maxf(60.0, count * 7.0)
+	var spot := center + Vector2.from_angle(TAU * index / maxi(count, 1)) * ring
+	_mourn_spot = level.nearest_open_spot(spot)
+	_mourn_timer = randf_range(1.5, 3.0)
+	queue_redraw()
+
+
+func _mourn_step(delta: float) -> void:
+	var arrived := global_position.distance_to(_mourn_spot) < 20.0
+	var desired := Vector2.ZERO
+	if not arrived:
+		desired = _follow_path_to(_mourn_spot, delta)
+		rotation = lerp_angle(rotation, desired.angle(), minf(1.0, 10.0 * delta)) if desired != Vector2.ZERO else rotation
+	else:
+		rotation = lerp_angle(rotation, (_mourn_center - global_position).angle(), minf(1.0, 10.0 * delta))
+		_mourn_timer -= delta
+		if _mourn_timer <= 0.0:
+			_mourn_timer = randf_range(3.0, 4.5)
+			say(LINES_KILL.pick_random())
+	velocity = velocity.move_toward(desired * speed * 0.7, 1600.0 * delta)
 
 
 func say(text: String) -> void:
@@ -224,7 +264,10 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	if player == null or not is_instance_valid(player) or player.health <= 0.0:
-		velocity = velocity.move_toward(Vector2.ZERO, 1500.0 * delta)
+		if _mourn:
+			_mourn_step(delta)
+		else:
+			velocity = velocity.move_toward(Vector2.ZERO, 1500.0 * delta)
 		move_and_slide()
 		return
 

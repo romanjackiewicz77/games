@@ -22,6 +22,11 @@ var _alive := 0
 
 ## Menu startowe pokazuje się tylko przy pierwszym uruchomieniu (nie po restarcie po śmierci).
 static var skip_menu := false
+## Set when the player picks "play again": the next Level skips the menu once.
+static var retry := false
+var _dying := false
+var _over := false
+var _plan_sprite: Sprite2D
 
 ## Pokazuje kolizje (ściany/meble) do debugowania; domyślnie niewidoczne.
 @export var show_collisions := false
@@ -72,7 +77,8 @@ func _ready() -> void:
 	queue_redraw()
 	_pause = PauseOverlay.new()
 	add_child(_pause)
-	if skip_menu:
+	if skip_menu or retry:
+		retry = false
 		_pause.enabled = true
 		_start_wave()
 	else:
@@ -90,7 +96,36 @@ func _on_start_pressed() -> void:
 
 func _on_player_died() -> void:
 	Scores.add(_player.survived, _wave)
-	_hud.set_death_text("Zginąłeś! Czas przeżycia: %s (fala %d)" % [Scores.format_time(_player.survived), _wave])
+	_pause.enabled = false
+	var stain := BloodStain.new()
+	stain.position = _player.global_position
+	add_child(stain)
+	move_child(stain, _plan_sprite.get_index() + 1 if _plan_sprite != null else 0)
+	var survivors := get_tree().get_nodes_in_group("enemies")
+	for i in survivors.size():
+		(survivors[i] as Enemy).start_mourn(_player.global_position, i, survivors.size())
+	_dying = true
+	await get_tree().create_timer(10.0).timeout
+	_show_game_over()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _dying and not _over and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_show_game_over()
+
+
+func _show_game_over() -> void:
+	if _over or not is_inside_tree():
+		return
+	_over = true
+	var screen := GameOver.new()
+	add_child(screen)
+	screen.setup(Scores.format_time(_player.survived), _wave)
+	screen.play_again.connect(func() -> void:
+		retry = true
+		get_tree().reload_current_scene())
+	screen.to_menu.connect(func() -> void: get_tree().reload_current_scene())
+
 
 func _start_wave() -> void:
 	if _spawn_points.is_empty():
@@ -311,6 +346,7 @@ func _add_plan_sprite() -> void:
 	sprite.scale = Vector2.ONE * (tile / tile_px)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	add_child(sprite)
+	_plan_sprite = sprite
 
 
 func _load_rows(path: String) -> PackedStringArray:

@@ -52,6 +52,12 @@ func _ready() -> void:
 	scores_button.add_theme_font_size_override("font_size", 32)
 	row.add_child(scores_button)
 
+	var quit_button := Button.new()
+	quit_button.text = "WYJDŹ Z GRY"
+	quit_button.custom_minimum_size = Vector2(260, 70)
+	quit_button.add_theme_font_size_override("font_size", 32)
+	quit_button.pressed.connect(func() -> void: get_tree().quit())
+	row.add_child(quit_button)
 	var scores := Label.new()
 	scores.visible = false
 	scores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

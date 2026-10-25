@@ -7,13 +7,14 @@ extends CharacterBody2D
 @export var fire_rate := 8.0
 @export var bullet_speed := 900.0
 
-const RADIUS := 16.0
+const RADIUS := 11.0
 var _cooldown := 0.0
 
 
 func _ready() -> void:
 	InputSetup.ensure()
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	wall_min_slide_angle = 0.0
 	collision_layer = 2
 	collision_mask = 1 | 4
 	var shape := CollisionShape2D.new()

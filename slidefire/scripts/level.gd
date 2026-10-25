@@ -202,6 +202,22 @@ func line_clear(a: Vector2, b: Vector2) -> bool:
 	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 
+var _cover_cache := {}
+
+
+func _cover_at(x: int, y: int) -> int:
+	var key := Vector2i(x, y)
+	if _cover_cache.has(key):
+		return _cover_cache[key]
+	var cover := 0
+	for dy in range(-3, 4):
+		for dx in range(-3, 4):
+			if _is_solid_char(x + dx, y + dy):
+				cover += 1
+	_cover_cache[key] = cover
+	return cover
+
+
 ## Kryjówka dla przeciwnika: daleko od zagrożenia, w kącie, najlepiej poza jego linią widzenia.
 func find_hiding_spot(from: Vector2, threat: Vector2, taken: Array[Vector2] = []) -> Vector2:
 	var scored: Array = []
@@ -210,12 +226,7 @@ func find_hiding_spot(from: Vector2, threat: Vector2, taken: Array[Vector2] = []
 			if _astar.is_point_solid(Vector2i(x, y)):
 				continue
 			var p := (Vector2(x, y) + Vector2(0.5, 0.5)) * tile
-			var cover := 0
-			for dy in range(-3, 4):
-				for dx in range(-3, 4):
-					if _is_solid_char(x + dx, y + dy):
-						cover += 1
-			scored.append([threat.distance_to(p) * 0.5 + cover * 12.0 - from.distance_to(p) * 0.3, p])
+			scored.append([threat.distance_to(p) * 0.5 + _cover_at(x, y) * 12.0 - from.distance_to(p) * 0.3, p])
 	scored.sort_custom(func(m, n): return m[0] > n[0])
 	var best := from
 	var best_score := -INF

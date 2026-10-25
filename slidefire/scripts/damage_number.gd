@@ -18,13 +18,12 @@ static func spawn(parent: Node, pos: Vector2, amount: float, col: Color) -> void
 	parent.add_child(n)
 
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	_age += delta
 	position.y -= 40.0 * delta
 	modulate.a = clampf(1.0 - _age / LIFETIME, 0.0, 1.0)
 	if _age >= LIFETIME:
 		queue_free()
-	queue_redraw()
 
 
 func _draw() -> void:

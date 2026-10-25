@@ -70,6 +70,7 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	var cam := Camera2D.new()
+	cam.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
 	cam.position_smoothing_enabled = true
 	add_child(cam)
 	_bar = Node2D.new()

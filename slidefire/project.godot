@@ -22,3 +22,9 @@ config/features=PackedStringArray("4.7")
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/vsync/vsync_mode=1
+
+[physics]
+
+common/physics_interpolation=true
+common/physics_ticks_per_second=60

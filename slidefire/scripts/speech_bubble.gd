@@ -27,7 +27,7 @@ func say(text: String) -> void:
 	queue_redraw()
 
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _target == null or not is_instance_valid(_target):
 		queue_free()
 		return

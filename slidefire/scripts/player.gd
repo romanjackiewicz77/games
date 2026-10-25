@@ -115,6 +115,7 @@ func _shoot(direction: Vector2) -> void:
 	bullet.target_layer = 8
 	bullet.add_to_group("player_bullets")
 	get_parent().add_child(bullet)
+	Sfx.play(get_parent(), "shot_player", global_position, -6.0)
 
 
 func _draw() -> void:

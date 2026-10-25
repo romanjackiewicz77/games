@@ -159,6 +159,7 @@ func take_damage(amount: float) -> void:
 	if health > 0.0 and randf() < 0.3:
 		say(LINES_BEG.pick_random() if _is_low() else LINES_PRAISE.pick_random())
 	if health <= 0.0:
+		Sfx.play(get_parent(), "death", global_position, -2.0)
 		died.emit()
 		queue_free()
 
@@ -302,6 +303,7 @@ func _shoot(to_player: Vector2) -> void:
 	bullet.target_layer = 2
 	bullet.color = Color(1.0, 0.55, 0.1)
 	get_parent().add_child(bullet)
+	Sfx.play(get_parent(), "shot_enemy", global_position, -9.0)
 
 
 func _draw() -> void:

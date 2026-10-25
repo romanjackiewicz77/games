@@ -45,16 +45,16 @@ func _ready() -> void:
 		"LPM – strzał z karabinu (przytrzymaj dłużej niż 0,4 s: super strzelanie",
 		"przez maks. 5 s, +50% szybkości, pociski 30% siły, odnowienie 15 s)",
 		"PPM – granat z falą uderzeniową (2 rzuty, potem 4 s przerwy)",
-				"",
-				"FALE",
-				"Fala N to N przeciwników. Po każdej fali: pełne leczenie, +5% zdrowia, +10% obrażeń.",
-				"Fale 1–4: amatorzy (żółci, wolni, często się wystawiają) i średniacy (pomarańczowi)",
-				"Fale 5–9: amatorzy i średniacy + 1 zawodowiec (fioletowy, szybki jak Ty, zawsze strzela)",
-				"Fale 10–15: głównie średniacy i zawodowcy",
-				"Od fali 16: sami zawodowcy",
-			])
-			help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			help.add_theme_font_size_override("font_size", 16)
+		"",
+		"FALE",
+		"Fala N to N przeciwników. Po każdej fali: pełne leczenie, +5% zdrowia, +10% obrażeń.",
+		"Fale 1–4: amatorzy (żółci, wolni, często się wystawiają) i średniacy (pomarańczowi)",
+		"Fale 5–9: amatorzy i średniacy + 1 zawodowiec (fioletowy, szybki jak Ty, zawsze strzela)",
+		"Fale 10–15: głównie średniacy i zawodowcy",
+		"Od fali 16: sami zawodowcy",
+	])
+	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	help.add_theme_font_size_override("font_size", 16)
 	help.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
 	box.add_child(help)
 

@@ -40,6 +40,9 @@ var kind := Kind.AMATEUR
 var radius := 11.0
 var body_color := Color(0.85, 0.25, 0.25)
 var _spawn_shield := 5.0
+var _has_stage := false
+var _group := 0
+var _stage_spot := Vector2.ZERO
 var forget_chance := 0.0
 var slow_chance := 0.0
 var dodge_chance := 0.5
@@ -229,7 +232,7 @@ func _physics_process(delta: float) -> void:
 	var los := level.line_clear(global_position, player.global_position)
 	rotation = lerp_angle(rotation, to_player.angle(), minf(1.0, 12.0 * delta))
 
-	var desired := _retreat_move(delta) if _is_low() else _combat_move(to_player, dist, los, delta)
+	var desired := _stage_move(to_player, delta) if _spawn_shield > 0.0 else (_retreat_move(delta) if _is_low() else _combat_move(to_player, dist, los, delta))
 	if _flee_time > 0.0:
 		_flee_time -= delta
 		desired = -to_player.normalized()
@@ -248,16 +251,38 @@ func _physics_process(delta: float) -> void:
 
 	_cooldown -= delta
 	_grenade_timer -= delta
-	if kind == Kind.PRO and _grenades_left > 0 and _grenade_timer <= 0.0 and _flee_time <= 0.0:
+	if kind == Kind.PRO and _grenades_left > 0 and _grenade_timer <= 0.0 and _flee_time <= 0.0 and _spawn_shield <= 0.0:
 		if los and dist > 160.0 and dist < 450.0:
 			_throw_grenade()
 		else:
 			_grenade_timer = 1.0
-	if _flee_time <= 0.0 and los and _cooldown <= 0.0 and dist <= max_shoot_distance and (kind == Kind.PRO or director.can_fire(self)):
+	if _flee_time <= 0.0 and _spawn_shield <= 0.0 and los and _cooldown <= 0.0 and dist <= max_shoot_distance and (kind == Kind.PRO or director.can_fire(self)):
 		if randf() >= forget_chance:
 			_shoot(to_player)
 		var slow := 2.5 if randf() < slow_chance else 1.0
 		_cooldown = fire_interval * slow * randf_range(0.9, 1.3)
+
+
+## W czasie osłony przeciwnicy dzielą się na dwie grupy uderzeniowe i zajmują pozycje na przeciwnych flankach.
+func _stage_move(to_player: Vector2, delta: float) -> Vector2:
+	if not _has_stage:
+		_has_stage = true
+		_group = maxi(director.enemies.find(self), 0) % 2
+		_stage_spot = _pick_stage_spot(to_player)
+		say("Grupa %s, flanka!" % ("A" if _group == 0 else "B"))
+	if global_position.distance_to(_stage_spot) < 20.0:
+		return Vector2.ZERO
+	return _follow_path_to(_stage_spot, delta)
+
+
+func _pick_stage_spot(to_player: Vector2) -> Vector2:
+	var back := -to_player.normalized()
+	var side := 0.9 if _group == 0 else -0.9
+	for reach in [380.0, 300.0, 220.0, 150.0]:
+		var spot: Vector2 = player.global_position + back.rotated(side) * reach + Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		if level.is_free(spot):
+			return spot
+	return level._free_spot_near(global_position)
 
 
 func _throw_grenade() -> void:
@@ -381,6 +406,8 @@ func _draw() -> void:
 	if _spawn_shield > 0.0:
 		var on := int(_spawn_shield * 8.0) % 2 == 0
 		col = Color(0.6, 0.9, 1.0) if on else Color(1, 1, 1, 0.35)
+		if _group == 1:
+			col = Color(0.7, 1.0, 0.7) if on else Color(1, 1, 1, 0.35)
 		draw_arc(Vector2.ZERO, radius + 5.0, 0.0, TAU, 24, Color(0.6, 0.9, 1.0, 0.9 if on else 0.4), 2.0)
 	draw_circle(Vector2.ZERO, radius, col)
 	draw_line(Vector2.ZERO, Vector2(radius + 12.0, 0.0), Color.BLACK, 5.0)

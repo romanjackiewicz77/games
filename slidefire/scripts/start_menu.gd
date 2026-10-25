@@ -82,7 +82,8 @@ func _ready() -> void:
 	footer.offset_bottom = -12
 	footer.add_theme_font_size_override("font_size", 16)
 	footer.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
-	add_child(footer)	scores_button.pressed.connect(func() -> void:
+	add_child(footer)
+	scores_button.pressed.connect(func() -> void:
 		scores.text = _scores_text()
 		scores.visible = not scores.visible
 		help.visible = not scores.visible)

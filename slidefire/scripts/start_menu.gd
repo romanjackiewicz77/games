@@ -17,7 +17,7 @@ func _ready() -> void:
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	box.grow_vertical = Control.GROW_DIRECTION_BOTH
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 40)
+	box.add_theme_constant_override("separation", 28)
 	add_child(box)
 
 	var title := Label.new()
@@ -37,6 +37,19 @@ func _ready() -> void:
 	button.pressed.connect(_on_pressed)
 	box.add_child(button)
 	button.grab_focus()
+
+	var help := Label.new()
+	help.text = "\n".join([
+		"STEROWANIE",
+		"WSAD / strzałki – ruch,  mysz – celowanie,  spacja – pauza",
+		"LPM – strzał z karabinu (przytrzymaj dłużej niż 0,4 s: super strzelanie",
+		"przez maks. 5 s, +50% szybkości, pociski 30% siły, odnowienie 15 s)",
+		"PPM – granat z falą uderzeniową (2 rzuty, potem 4 s przerwy)",
+	])
+	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	help.add_theme_font_size_override("font_size", 18)
+	help.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
+	box.add_child(help)
 
 
 func _on_pressed() -> void:

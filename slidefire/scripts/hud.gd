@@ -18,10 +18,10 @@ var _player: Player
 func _process(_delta: float) -> void:
 	if _player == null:
 		return
-	if _player.grenade_left <= 0.0:
-		_grenade.text = "Granat (PPM): gotowy"
+	if _player.grenade_charges > 0:
+		_grenade.text = "Granaty (PPM): %d / %d" % [_player.grenade_charges, Player.GRENADE_CHARGES]
 	else:
-		_grenade.text = "Granat (PPM): %.1f s" % _player.grenade_left
+		_grenade.text = "Granaty (PPM): odnowienie %.1f s" % _player.grenade_left
 
 
 func set_stats(wins: int, wave: int, damage: float) -> void:

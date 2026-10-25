@@ -14,6 +14,7 @@ var _astar := AStarGrid2D.new()
 var _player: Player
 var _hud: Hud
 var _director: Director
+var _pause: PauseOverlay
 var _spawn_points: Array[Vector2] = []
 var _wave := 0
 var _wins := 0
@@ -66,7 +67,10 @@ func _ready() -> void:
 	add_child(_director)
 	_spawn_points = _find_all("E")
 	queue_redraw()
+	_pause = PauseOverlay.new()
+	add_child(_pause)
 	if skip_menu:
+		_pause.enabled = true
 		_start_wave()
 	else:
 		get_tree().paused = true
@@ -78,6 +82,7 @@ func _ready() -> void:
 func _on_start_pressed() -> void:
 	skip_menu = true
 	get_tree().paused = false
+	_pause.enabled = true
 	_start_wave()
 
 func _start_wave() -> void:

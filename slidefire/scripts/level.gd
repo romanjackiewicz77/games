@@ -44,6 +44,7 @@ func _add_body(rects: Array[Rect2i], layer: int) -> void:
 
 func _ready() -> void:
 	Sfx.warmup()
+	add_child(Music.new())
 	_rows = _load_rows(map_path)
 	if _rows.is_empty():
 		push_error("Nie można wczytać mapy: %s" % map_path)

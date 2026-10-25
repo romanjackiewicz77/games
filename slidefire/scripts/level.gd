@@ -19,6 +19,9 @@ var _wave := 0
 var _wins := 0
 var _alive := 0
 
+## Menu startowe pokazuje się tylko przy pierwszym uruchomieniu (nie po restarcie po śmierci).
+static var skip_menu := false
+
 ## Pokazuje kolizje (ściany/meble) do debugowania; domyślnie niewidoczne.
 @export var show_collisions := false
 
@@ -63,8 +66,19 @@ func _ready() -> void:
 	add_child(_director)
 	_spawn_points = _find_all("E")
 	queue_redraw()
-	_start_wave()
+	if skip_menu:
+		_start_wave()
+	else:
+		get_tree().paused = true
+		var menu := StartMenu.new()
+		add_child(menu)
+		menu.started.connect(_on_start_pressed)
 
+
+func _on_start_pressed() -> void:
+	skip_menu = true
+	get_tree().paused = false
+	_start_wave()
 
 func _start_wave() -> void:
 	if _spawn_points.is_empty():

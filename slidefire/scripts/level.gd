@@ -45,6 +45,9 @@ func _ready() -> void:
 	var player := Player.new()
 	player.position = _find_start()
 	add_child(player)
+	var hud := Hud.new()
+	add_child(hud)
+	hud.bind(player)
 	queue_redraw()
 
 

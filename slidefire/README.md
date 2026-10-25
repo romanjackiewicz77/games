@@ -46,3 +46,7 @@ Pomaluj kopię `maps/map_01_preview.png` (np. jako `map_01_edit.png`) czystymi k
 ### Mapa z pomalowanego rzutu (map_02)
 
 Rzut z fioletowymi meblami: `python tools/painted_to_map.py maps/map_02_edit.jpg --px-per-cm 2.4` (skala jest założona, popraw ją, jeśli znasz wymiar). Domyślna mapa gry to `map_02`; zmienisz ją we właściwości `map_path` węzła Level.
+
+### Życie gracza
+
+Gracz ma 100 punktów życia (pasek w lewym górnym rogu). `Player.take_damage(x)` odejmuje życie, po śmierci poziom restartuje się po 2 s. Klawisz **H** odejmuje 10 punktów (test, do czasu przeciwników).

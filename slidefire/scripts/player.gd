@@ -6,12 +6,40 @@ extends CharacterBody2D
 @export var friction := 700.0
 @export var fire_rate := 8.0
 @export var bullet_speed := 900.0
+@export var max_health := 100.0
+
+signal health_changed(current: float, maximum: float)
+signal died
 
 const RADIUS := 11.0
+var health := 100.0
 var _cooldown := 0.0
 
 
+func take_damage(amount: float) -> void:
+	if health <= 0.0:
+		return
+	health = clampf(health - amount, 0.0, max_health)
+	health_changed.emit(health, max_health)
+	if health <= 0.0:
+		died.emit()
+
+
+func heal(amount: float) -> void:
+	if health <= 0.0:
+		return
+	health = clampf(health + amount, 0.0, max_health)
+	health_changed.emit(health, max_health)
+
+
+# Klawisz testowy: H odejmuje 10 punktów życia (do czasu, aż pojawią się przeciwnicy).
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_H:
+		take_damage(10.0)
+
+
 func _ready() -> void:
+	health = max_health
 	InputSetup.ensure()
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	wall_min_slide_angle = 0.0

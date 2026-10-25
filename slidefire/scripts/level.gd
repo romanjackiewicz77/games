@@ -8,6 +8,10 @@ extends Node2D
 var _rows: PackedStringArray = []
 var _wall_rects: Array[Rect2i] = []
 var _furniture_rects: Array[Rect2i] = []
+var _meta := {}
+
+## Pokazuje kolizje (ściany/meble) do debugowania; domyślnie niewidoczne.
+@export var show_collisions := false
 
 
 # Warstwa 1 = ściany (blokują gracza i pociski), 4 = meble (blokują tylko gracza, pociski je przebijają).
@@ -36,10 +40,32 @@ func _ready() -> void:
 	_add_body(_wall_rects, 1)
 	_add_body(_furniture_rects, 4)
 
+	_add_plan_sprite()
+
 	var player := Player.new()
 	player.position = _find_start()
 	add_child(player)
 	queue_redraw()
+
+
+# Rzut z pliku jako widoczna grafika poziomu, dopasowana do siatki kafelków.
+func _add_plan_sprite() -> void:
+	if not (_meta.has("image") and _meta.has("roi") and _meta.has("px_per_cm") and _meta.has("tile_cm")):
+		return
+	var tex := load(map_path.get_base_dir() + "/" + _meta["image"]) as Texture2D
+	if tex == null:
+		push_warning("Nie można wczytać rzutu: %s" % _meta["image"])
+		return
+	var roi := (_meta["roi"] as String).split(",")
+	var tile_px := float(_meta["tile_cm"]) * float(_meta["px_per_cm"])
+	var sprite := Sprite2D.new()
+	sprite.texture = tex
+	sprite.centered = false
+	sprite.region_enabled = true
+	sprite.region_rect = Rect2(int(roi[0]), int(roi[1]), int(roi[2]), int(roi[3]))
+	sprite.scale = Vector2.ONE * (tile / tile_px)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	add_child(sprite)
 
 
 func _load_rows(path: String) -> PackedStringArray:
@@ -49,7 +75,11 @@ func _load_rows(path: String) -> PackedStringArray:
 	var rows := PackedStringArray()
 	while not file.eof_reached():
 		var line := file.get_line().strip_edges()
-		if line != "" and not line.begins_with(";"):
+		if line.begins_with(";"):
+			var kv := line.substr(1).split("=", true, 1)
+			if kv.size() == 2:
+				_meta[kv[0].strip_edges()] = kv[1].strip_edges()
+		elif line != "":
 			rows.append(line)
 	return rows
 
@@ -90,7 +120,7 @@ func _merge_walls(rows: PackedStringArray, kind: String) -> Array[Rect2i]:
 
 
 func _draw() -> void:
-	if _rows.is_empty():
+	if _rows.is_empty() or not show_collisions:
 		return
 	var cols: int = _rows[0].length()
 	draw_rect(Rect2(0, 0, cols * tile, _rows.size() * tile), Color(0.1, 0.1, 0.12))

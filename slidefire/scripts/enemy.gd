@@ -56,6 +56,13 @@ var _alone_hiding := 0.0
 var _desperate := false
 
 const KNOCK_DURATION := 0.35
+const GRENADES_PER_WAVE := 2
+const FLEE_RADIUS := 300.0
+const FLEE_TIME := 2.5
+
+var _grenades_left := GRENADES_PER_WAVE
+var _grenade_timer := randf_range(3.0, 7.0)
+var _flee_time := 0.0
 
 var _cooldown := 0.5
 var _path := PackedVector2Array()
@@ -204,6 +211,9 @@ func _physics_process(delta: float) -> void:
 	rotation = lerp_angle(rotation, to_player.angle(), minf(1.0, 12.0 * delta))
 
 	var desired := _retreat_move(delta) if _is_low() else _combat_move(to_player, dist, los, delta)
+	if _flee_time > 0.0:
+		_flee_time -= delta
+		desired = -to_player.normalized()
 	desired = (desired + _separation()).limit_length(1.0)
 
 	var dodge := _dodge_vector()
@@ -218,11 +228,29 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	_cooldown -= delta
-	if los and _cooldown <= 0.0 and dist <= max_shoot_distance and (kind == Kind.PRO or director.can_fire(self)):
+	_grenade_timer -= delta
+	if kind == Kind.PRO and _grenades_left > 0 and _grenade_timer <= 0.0 and _flee_time <= 0.0:
+		if los and dist > 160.0 and dist < 450.0:
+			_throw_grenade()
+		else:
+			_grenade_timer = 1.0
+	if _flee_time <= 0.0 and los and _cooldown <= 0.0 and dist <= max_shoot_distance and (kind == Kind.PRO or director.can_fire(self)):
 		if randf() >= forget_chance:
 			_shoot(to_player)
 		var slow := 2.5 if randf() < slow_chance else 1.0
 		_cooldown = fire_interval * slow * randf_range(0.9, 1.3)
+
+
+func _throw_grenade() -> void:
+	_grenades_left -= 1
+	_grenade_timer = randf_range(6.0, 12.0)
+	say("Granat!")
+	Grenade.throw_hostile(get_parent(), global_position, player.global_position)
+	# Koledzy w pobliżu gracza uciekają od niego, żeby nie oberwać.
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e != null and e != self and e.global_position.distance_to(player.global_position) < FLEE_RADIUS:
+			e._flee_time = FLEE_TIME
 
 
 func _combat_move(to_player: Vector2, dist: float, los: bool, delta: float) -> Vector2:

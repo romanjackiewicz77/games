@@ -49,7 +49,7 @@ func _ready() -> void:
 		"FALE",
 		"Fala N to N przeciwników. Po każdej fali: pełne leczenie, +5% zdrowia, +10% obrażeń.",
 		"Fale 1–4: amatorzy (żółci, wolni, często się wystawiają) i średniacy (pomarańczowi)",
-		"Fale 5–9: amatorzy i średniacy + 1 zawodowiec (fioletowy, szybki jak Ty, zawsze strzela)",
+		"Fale 5–9: amatorzy i średniacy + 1 zawodowiec (fioletowy, szybki jak Ty, zawsze strzela, rzuca 2 granaty na falę)",
 		"Fale 10–15: głównie średniacy i zawodowcy",
 		"Od fali 16: sami zawodowcy",
 	])

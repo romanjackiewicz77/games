@@ -275,14 +275,24 @@ func _stage_move(to_player: Vector2, delta: float) -> Vector2:
 	return _follow_path_to(_stage_spot, delta)
 
 
-func _pick_stage_spot(_to_player: Vector2) -> Vector2:
-	# Dwie grupy tuż przy miejscu pojawienia się: jedna z jednej, druga z drugiej strony.
-	var side := -1.0 if _group == 0 else 1.0
-	for reach in [110.0, 80.0, 50.0, 25.0]:
-		var spot: Vector2 = global_position + Vector2(randf_range(20, 70), side * reach + randf_range(-25, 25))
-		if level.is_free(spot):
-			return spot
-	return global_position
+func _pick_stage_spot(to_player: Vector2) -> Vector2:
+	# Dwie grupy przy miejscu pojawienia się; gdy brakuje tam miejsca, kolejni wchodzą coraz głębiej do mieszkania.
+	var origin: Vector2 = level._find_all("E")[0]
+	var depth_dir := to_player.normalized()
+	var side_dir := depth_dir.orthogonal() * (-1.0 if _group == 0 else 1.0)
+	for depth in range(0, 700, 40):
+		for lateral in [30.0, 80.0, 130.0, 180.0]:
+			var spot: Vector2 = origin + depth_dir * (50.0 + depth) + side_dir * lateral
+			if level.is_free(spot) and not _stage_taken(spot):
+				return spot
+	return level._free_spot_near(global_position)
+
+
+func _stage_taken(spot: Vector2) -> bool:
+	for other in director.enemies:
+		if is_instance_valid(other) and other != self and other._has_stage and other._stage_spot.distance_to(spot) < 40.0:
+			return true
+	return false
 
 
 func _throw_grenade() -> void:

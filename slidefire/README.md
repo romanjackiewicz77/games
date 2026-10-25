@@ -50,3 +50,7 @@ Rzut z fioletowymi meblami: `python tools/painted_to_map.py maps/map_02_edit.jpg
 ### Życie gracza
 
 Gracz ma 100 punktów życia (pasek w lewym górnym rogu). `Player.take_damage(x)` odejmuje życie, po śmierci poziom restartuje się po 2 s. Klawisz **H** odejmuje 10 punktów (test, do czasu przeciwników).
+
+### Przeciwnicy
+
+Przeciwnik pojawia się w miejscach oznaczonych czerwienią (`#FF0000`) w `*_edit.jpg` (znak `E` w mapie). Idzie do gracza (A*), strzela z rozrzutem i unika pocisków gracza. Ma 100 punktów życia (pasek nad głową). Poniżej 25% życia ucieka do jednej kryjówki (kąt poza linią widzenia gracza) i broni się stamtąd. Parametry są w ``scripts/enemy.gd``.

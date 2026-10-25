@@ -6,6 +6,7 @@ extends CharacterBody2D
 @export var friction := 700.0
 @export var fire_rate := 8.0
 @export var bullet_speed := 900.0
+@export var bullet_damage := 10.0
 @export var max_health := 100.0
 
 signal health_changed(current: float, maximum: float)
@@ -43,8 +44,9 @@ func _ready() -> void:
 	InputSetup.ensure()
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	wall_min_slide_angle = 0.0
+	add_to_group("player")
 	collision_layer = 2
-	collision_mask = 1 | 4
+	collision_mask = 1 | 4 | 8
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = RADIUS
@@ -78,6 +80,9 @@ func _shoot(direction: Vector2) -> void:
 	var bullet := Bullet.new()
 	bullet.position = position + direction * (RADIUS + 14.0)
 	bullet.velocity = direction * bullet_speed
+	bullet.damage = bullet_damage
+	bullet.target_layer = 8
+	bullet.add_to_group("player_bullets")
 	get_parent().add_child(bullet)
 
 

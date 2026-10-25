@@ -1,6 +1,7 @@
 extends Node2D
+class_name Level
 
-## Plik mapy (tekst: '#' ściana, '.' podłoga, 'P' start; linie od ';' to nagłówek).
+## Plik mapy (tekst: '#' ściana, 'F' mebel, '.' podłoga, 'P' start gracza, 'E' start przeciwnika; linie od ';' to nagłówek).
 @export_file("*.txt") var map_path := "res://maps/map_02.txt"
 ## Rozmiar kafelka w pikselach gry (kafelek mapy = 12 cm).
 @export var tile := 16
@@ -9,6 +10,7 @@ var _rows: PackedStringArray = []
 var _wall_rects: Array[Rect2i] = []
 var _furniture_rects: Array[Rect2i] = []
 var _meta := {}
+var _astar := AStarGrid2D.new()
 
 ## Pokazuje kolizje (ściany/meble) do debugowania; domyślnie niewidoczne.
 @export var show_collisions := false
@@ -48,7 +50,98 @@ func _ready() -> void:
 	var hud := Hud.new()
 	add_child(hud)
 	hud.bind(player)
+	_build_navigation()
+	for spot in _find_all("E"):
+		var enemy := Enemy.new()
+		enemy.position = spot
+		enemy.level = self
+		enemy.player = player
+		add_child(enemy)
 	queue_redraw()
+
+
+func _find_all(ch: String) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for y in _rows.size():
+		for x in _rows[y].length():
+			if _rows[y][x] == ch:
+				result.append((Vector2(x, y) + Vector2(0.5, 0.5)) * tile)
+	return result
+
+
+func _is_solid_char(x: int, y: int) -> bool:
+	if y < 0 or y >= _rows.size() or x < 0 or x >= _rows[y].length():
+		return true
+	return _rows[y][x] == "#" or _rows[y][x] == "F"
+
+
+# Siatka A* dla przeciwników; kafelki przy ścianach i meblach są zablokowane (margines na promień postaci).
+func _build_navigation() -> void:
+	_astar.region = Rect2i(0, 0, _rows[0].length(), _rows.size())
+	_astar.cell_size = Vector2(tile, tile)
+	_astar.offset = Vector2(tile, tile) / 2.0
+	_astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	_astar.update()
+	for y in _rows.size():
+		for x in _rows[y].length():
+			for dy in range(-1, 2):
+				for dx in range(-1, 2):
+					if _is_solid_char(x + dx, y + dy):
+						_astar.set_point_solid(Vector2i(x, y))
+
+
+func _nearest_free(t: Vector2i) -> Vector2i:
+	for r in range(0, 7):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if maxi(absi(dx), absi(dy)) != r:
+					continue
+				var c := t + Vector2i(dx, dy)
+				if _astar.is_in_boundsv(c) and not _astar.is_point_solid(c):
+					return c
+	return Vector2i(-1, -1)
+
+
+func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
+	var a := _nearest_free(Vector2i((from / tile).floor()))
+	var b := _nearest_free(Vector2i((to / tile).floor()))
+	if a.x < 0 or b.x < 0:
+		return PackedVector2Array()
+	return _astar.get_point_path(a, b)
+
+
+## Czy między punktami nie ma ściany (meble nie zasłaniają widoku).
+func line_clear(a: Vector2, b: Vector2) -> bool:
+	var query := PhysicsRayQueryParameters2D.create(a, b, 1)
+	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+
+
+## Kryjówka dla przeciwnika: daleko od zagrożenia, w kącie, najlepiej poza jego linią widzenia.
+func find_hiding_spot(from: Vector2, threat: Vector2) -> Vector2:
+	var scored: Array = []
+	for y in range(2, _rows.size() - 2, 2):
+		for x in range(2, _rows[y].length() - 2, 2):
+			if _astar.is_point_solid(Vector2i(x, y)):
+				continue
+			var p := (Vector2(x, y) + Vector2(0.5, 0.5)) * tile
+			var cover := 0
+			for dy in range(-3, 4):
+				for dx in range(-3, 4):
+					if _is_solid_char(x + dx, y + dy):
+						cover += 1
+			scored.append([threat.distance_to(p) * 0.5 + cover * 12.0 - from.distance_to(p) * 0.3, p])
+	scored.sort_custom(func(m, n): return m[0] > n[0])
+	var best := from
+	var best_score := -INF
+	for i in mini(30, scored.size()):
+		var p: Vector2 = scored[i][1]
+		if find_path(from, p).is_empty():
+			continue
+		var score: float = scored[i][0] + (0.0 if line_clear(threat, p) else 400.0)
+		if score > best_score:
+			best_score = score
+			best = p
+	return best
 
 
 # Rzut z pliku jako widoczna grafika poziomu, dopasowana do siatki kafelków.

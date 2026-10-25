@@ -1,5 +1,5 @@
 ; map_02: wygenerowano z rzutu z pomalowanymi meblami
-; image=map_02.png
+; image=map_02.jpg
 ; roi=94,82,2166,1673
 ; px_per_cm=2.4
 ; tile_cm=12.0

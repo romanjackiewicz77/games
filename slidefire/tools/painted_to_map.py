@@ -4,8 +4,8 @@ Użycie (z folderu slidefire):
     python tools/painted_to_map.py maps/map_02_edit.jpg --px-per-cm 2.4
 
 Ściany to szare, kreskowane wypełnienie rzutu; fioletowe plamy to meble 'F'.
-Zapisuje maps/map_02.txt oraz maps/map_02.png (rzut z zamalowanymi na biało meblami,
-używany jako tło w grze). Wokół domu dodawana jest ściana, żeby nie wyjść poza mapę.
+Zapisuje maps/map_02.txt. Tłem w grze jest maps/map_02.jpg (czysty rzut), jeśli istnieje i ma ten sam rozmiar;
+w przeciwnym razie powstaje map_02.png z zamalowanymi meblami. Wokół domu dodawana jest ściana, żeby nie wyjść poza mapę.
 """
 import argparse
 from pathlib import Path
@@ -58,10 +58,14 @@ def main() -> None:
     sr, sc = np.unravel_index(dist.argmax(), dist.shape)
     grid[sr, sc] = "P"
 
-    clean = img.copy()
-    clean[magenta_full(img)] = 255
-    out_img = src.with_name(src.stem.replace("_edit", "") + ".png")
-    cv2.imwrite(str(out_img), clean)
+    base = src.with_name(src.stem.replace("_edit", "") + ".jpg")
+    if base.exists() and cv2.imread(str(base)).shape == img.shape:
+        out_img = base
+    else:
+        out_img = base.with_suffix(".png")
+        clean = img.copy()
+        clean[magenta_full(img)] = 255
+        cv2.imwrite(str(out_img), clean)
 
     out = src.with_name(src.stem.replace("_edit", "") + ".txt")
     header = [

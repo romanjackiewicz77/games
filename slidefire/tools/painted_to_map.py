@@ -3,6 +3,7 @@
 Użycie (z folderu slidefire):
     python tools/painted_to_map.py maps/map_02_edit.jpg --px-per-cm 2.4
 
+Czerwony #FF0000 = miejsce pojawienia się przeciwnika (znak 'E', jeden na plamę).
 Ściany to szare, kreskowane wypełnienie rzutu; fioletowe plamy to meble 'F'.
 Zapisuje maps/map_02.txt. Tłem w grze jest maps/map_02.jpg (czysty rzut), jeśli istnieje i ma ten sam rozmiar;
 w przeciwnym razie powstaje map_02.png z zamalowanymi meblami. Wokół domu dodawana jest ściana, żeby nie wyjść poza mapę.
@@ -31,6 +32,9 @@ def main() -> None:
     magenta = ((r > 200) & (b > 200) & (g < 90)).astype(np.uint8)
     magenta = cv2.morphologyEx(magenta, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
 
+    red = ((r > 200) & (g < 80) & (b < 80)).astype(np.uint8)
+    red = cv2.morphologyEx(red, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     sat = img.max(axis=2).astype(int) - img.min(axis=2).astype(int)
     ink = ((gray < 235) & (sat < 40) & (magenta == 0)).astype(np.uint8)
@@ -38,11 +42,11 @@ def main() -> None:
     fill = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9)))
     walls = cv2.morphologyEx(fill, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
 
-    ys, xs = np.nonzero(walls | magenta)
+    ys, xs = np.nonzero(walls | magenta | red)
     x0, y0 = max(xs.min() - MARGIN_PX, 0), max(ys.min() - MARGIN_PX, 0)
     x1, y1 = min(xs.max() + MARGIN_PX, img.shape[1]), min(ys.max() + MARGIN_PX, img.shape[0])
     w, h = x1 - x0, y1 - y0
-    walls, magenta = walls[y0:y1, x0:x1], magenta[y0:y1, x0:x1]
+    walls, magenta, red = walls[y0:y1, x0:x1], magenta[y0:y1, x0:x1], red[y0:y1, x0:x1]
 
     tile_px = args.tile_cm * args.px_per_cm
     cols, rows = int(w / tile_px), int(h / tile_px)
@@ -52,6 +56,14 @@ def main() -> None:
     grid[furn_t] = "F"
     grid[wall_t] = "#"
     grid[0, :] = grid[-1, :] = grid[:, 0] = grid[:, -1] = "#"
+
+    count, _, _, centroids = cv2.connectedComponentsWithStats(red)[0:4]
+    spawns = 0
+    for cx, cy in centroids[1:]:
+        sr_, sc_ = min(int(cy / tile_px), rows - 1), min(int(cx / tile_px), cols - 1)
+        if grid[sr_, sc_] == ".":
+            grid[sr_, sc_] = "E"
+            spawns += 1
 
     solid = np.isin(grid, ["#", "F"]).astype(np.uint8)
     dist = cv2.distanceTransform(1 - solid, cv2.DIST_L2, 5)
@@ -76,7 +88,7 @@ def main() -> None:
         f"; tile_cm={args.tile_cm}",
     ]
     out.write_text("\n".join(header + ["".join(row) for row in grid]) + "\n", encoding="utf-8")
-    print(f"{out}: {cols}x{rows}, ściany={int(wall_t.sum())}, meble={int(furn_t.sum())}, start=({sr},{sc})")
+    print(f"{out}: {cols}x{rows}, ściany={int(wall_t.sum())}, meble={int(furn_t.sum())}, przeciwnicy={spawns}, start=({sr},{sc})")
 
 
 def magenta_full(img: np.ndarray) -> np.ndarray:

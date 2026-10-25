@@ -47,6 +47,8 @@ def main() -> None:
                 cv2.rectangle(overlay, p1, p2, (0, 0, 255), -1)
             elif ch == "F":
                 cv2.rectangle(overlay, p1, p2, (0, 165, 255), -1)
+            elif ch == "E":
+                cv2.rectangle(overlay, p1, p2, (255, 0, 255), -1)
             elif ch == "P":
                 cv2.rectangle(overlay, p1, p2, (0, 200, 0), -1)
     view = cv2.addWeighted(overlay, 0.45, view, 0.55, 0)

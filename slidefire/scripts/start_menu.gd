@@ -7,8 +7,9 @@ signal started
 func _ready() -> void:
 	layer = 10
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(MenuArt.new())
 	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.06, 0.09, 0.92)
+	bg.color = Color(0.03, 0.04, 0.07, 0.4)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 

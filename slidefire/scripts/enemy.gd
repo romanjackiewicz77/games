@@ -63,6 +63,7 @@ const FLEE_TIME := 2.5
 var _grenades_left := GRENADES_PER_WAVE
 var _grenade_timer := randf_range(3.0, 7.0)
 var _flee_time := 0.0
+var _stuck_check := 0.5
 
 var _cooldown := 0.5
 var _path := PackedVector2Array()
@@ -196,6 +197,13 @@ func apply_shockwave(dir: Vector2, strength: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	_bar.global_position = global_position
+	_stuck_check -= delta
+	if _stuck_check <= 0.0:
+		_stuck_check = 0.5
+		var fixed := level.nearest_open_spot(global_position)
+		if fixed != global_position:
+			global_position = fixed
+			velocity = Vector2.ZERO
 	_talk(delta)
 	# Ranni przeciwnicy nie chowają się w nieskończoność, jeśli nikt zdrowy nie został (inaczej fala się nie kończy).
 	if _is_low() and _all_remaining_low():

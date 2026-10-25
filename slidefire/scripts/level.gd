@@ -97,6 +97,7 @@ func _start_wave() -> void:
 		var spot := _spawn_points[i % _spawn_points.size()]
 		if i >= _spawn_points.size():
 			spot = _free_spot_near(spot)
+		spot = nearest_open_spot(spot)
 		var enemy := Enemy.new()
 		enemy.setup(kinds[i])
 		enemy.position = spot
@@ -160,6 +161,23 @@ func _on_enemy_died() -> void:
 			return
 	_hud.show_countdown("")
 	_start_wave()
+
+
+## Najbliższy punkt poza ścianą (używane do spawnu i ratowania uwięzionych przeciwników).
+func nearest_open_spot(p: Vector2) -> Vector2:
+	var q := PhysicsPointQueryParameters2D.new()
+	q.position = p
+	q.collision_mask = 1 | 4
+	if is_free(p) or (get_world_2d().direct_space_state.intersect_point(q).is_empty() and _in_map(p)):
+		return p
+	var c := _nearest_free(Vector2i((p / tile).floor()))
+	if c.x < 0:
+		return p
+	return (Vector2(c) + Vector2(0.5, 0.5)) * tile
+
+
+func _in_map(p: Vector2) -> bool:
+	return Rect2(0, 0, _rows[0].length() * tile, _rows.size() * tile).has_point(p)
 
 
 func is_free(p: Vector2) -> bool:

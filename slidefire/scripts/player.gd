@@ -14,6 +14,9 @@ signal died
 
 const RADIUS := 11.0
 const BAR_SIZE := Vector2(40, 6)
+const GRENADE_COOLDOWN := 4.0
+
+var grenade_left := 0.0
 
 var _bar: Node2D
 var health := 100.0
@@ -105,6 +108,10 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("shoot") and _cooldown <= 0.0 and aim != Vector2.ZERO:
 		_shoot(aim.normalized())
 		_cooldown = 1.0 / fire_rate
+	grenade_left = maxf(grenade_left - delta, 0.0)
+	if Input.is_action_just_pressed("grenade") and grenade_left <= 0.0:
+		Grenade.throw_at(get_parent(), global_position, get_global_mouse_position())
+		grenade_left = GRENADE_COOLDOWN
 
 
 func _shoot(direction: Vector2) -> void:

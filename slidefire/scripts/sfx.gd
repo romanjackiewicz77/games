@@ -32,6 +32,7 @@ static func _build(sound: String) -> AudioStreamWAV:
 		"shot_player": length = 0.18
 		"shot_enemy": length = 0.22
 		"death": length = 0.6
+		"boom": length = 0.8
 	var n := int(RATE * length)
 	var data := PackedByteArray()
 	data.resize(n * 2)
@@ -53,6 +54,9 @@ static func _build(sound: String) -> AudioStreamWAV:
 				low += (rng.randf_range(-1.0, 1.0) - low) * 0.15
 				var f := lerpf(380.0, 70.0, k)
 				s = (sign(sin(TAU * f * t)) * 0.35 + low * 0.5) * exp(-k * 3.5)
+			"boom":
+				low += (rng.randf_range(-1.0, 1.0) - low) * 0.08
+				s = (low * 2.5 + sin(TAU * lerpf(90.0, 35.0, k) * t) * 0.7) * exp(-k * 4.0)
 		data.encode_s16(i * 2, int(clampf(s, -1.0, 1.0) * 26000.0))
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS

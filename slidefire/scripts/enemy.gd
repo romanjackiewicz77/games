@@ -50,6 +50,10 @@ var director: Director
 
 var _dodge_seen := {}
 var _dodge_wanted := false
+var _knock := Vector2.ZERO
+var _knock_time := 0.0
+
+const KNOCK_DURATION := 0.35
 
 var _cooldown := 0.5
 var _path := PackedVector2Array()
@@ -77,6 +81,7 @@ func setup(k: Kind) -> void:
 
 
 func _ready() -> void:
+	add_to_group("enemies")
 	health = max_health
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 	collision_layer = 8
@@ -168,9 +173,19 @@ func _is_low() -> bool:
 	return health <= max_health * low_health_ratio
 
 
+func apply_shockwave(dir: Vector2, strength: float) -> void:
+	_knock = dir * strength
+	_knock_time = KNOCK_DURATION
+
+
 func _physics_process(delta: float) -> void:
 	_bar.global_position = global_position
 	_talk(delta)
+	if _knock_time > 0.0:
+		_knock_time -= delta
+		velocity = _knock * clampf(_knock_time / KNOCK_DURATION, 0.0, 1.0)
+		move_and_slide()
+		return
 	if player == null or not is_instance_valid(player) or player.health <= 0.0:
 		velocity = velocity.move_toward(Vector2.ZERO, 1500.0 * delta)
 		move_and_slide()

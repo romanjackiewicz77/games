@@ -12,6 +12,11 @@ static func ensure() -> void:
 		var click := InputEventMouseButton.new()
 		click.button_index = MOUSE_BUTTON_LEFT
 		InputMap.action_add_event("shoot", click)
+	if not InputMap.has_action("grenade"):
+		InputMap.add_action("grenade")
+		var rmb := InputEventMouseButton.new()
+		rmb.button_index = MOUSE_BUTTON_RIGHT
+		InputMap.action_add_event("grenade", rmb)
 
 
 static func _add_key(action: String, key: Key, alt: Key = KEY_NONE) -> void:

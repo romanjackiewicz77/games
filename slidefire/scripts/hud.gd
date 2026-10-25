@@ -10,6 +10,17 @@ var _label: Label
 var _message: Label
 var _stats: Label
 var _countdown: Label
+var _grenade: Label
+var _player: Player
+
+
+func _process(_delta: float) -> void:
+	if _player == null:
+		return
+	if _player.grenade_left <= 0.0:
+		_grenade.text = "Granat (PPM): gotowy"
+	else:
+		_grenade.text = "Granat (PPM): %.1f s" % _player.grenade_left
 
 
 func set_stats(wins: int, wave: int, damage: float) -> void:
@@ -36,6 +47,10 @@ func _ready() -> void:
 	_stats.position = Vector2(20, 48)
 	add_child(_stats)
 
+	_grenade = Label.new()
+	_grenade.position = Vector2(20, 72)
+	add_child(_grenade)
+
 	_countdown = Label.new()
 	_countdown.visible = false
 	_countdown.add_theme_font_size_override("font_size", 40)
@@ -54,6 +69,7 @@ func _ready() -> void:
 
 
 func bind(player: Player) -> void:
+	_player = player
 	player.health_changed.connect(set_health)
 	player.died.connect(_on_died)
 	set_health(player.health, player.max_health)

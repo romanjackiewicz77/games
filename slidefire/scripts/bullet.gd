@@ -7,6 +7,8 @@ const FURNITURE_ENERGY_LOSS := 0.5
 const MIN_ENERGY := 0.3
 ## Kolor pocisków gracza (używany też przez celownik).
 const PLAYER_COLOR := Color.RED
+## Kolor pocisków podczas super strzelania.
+const RAPID_COLOR := Color(0.2, 0.9, 1.0)
 
 var velocity := Vector2.ZERO
 var lifetime := 2.0

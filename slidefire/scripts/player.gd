@@ -19,6 +19,7 @@ const GRENADE_CHARGES := 2
 
 var grenade_left := 0.0
 var grenade_charges := GRENADE_CHARGES
+var rapid_active := false
 
 var _bar: Node2D
 var health := 100.0
@@ -152,6 +153,7 @@ func _physics_process(delta: float) -> void:
 	elif _rapid_cooldown > 0.0:
 		_rapid_cooldown = maxf(_rapid_cooldown - delta, 0.0)
 		_bar.queue_redraw()
+	rapid_active = rapid
 	if holding and _cooldown <= 0.0 and aim != Vector2.ZERO:
 		_shoot(aim.normalized(), 0.3 if rapid else 1.0)
 		_cooldown = 1.0 / (fire_rate * (1.5 if rapid else 1.0))
@@ -172,6 +174,8 @@ func _shoot(direction: Vector2, power := 1.0) -> void:
 	bullet.velocity = direction * bullet_speed
 	bullet.damage = bullet_damage * power
 	bullet.target_layer = 8
+	if power < 1.0:
+		bullet.color = Bullet.RAPID_COLOR
 	bullet.add_to_group("player_bullets")
 	get_parent().add_child(bullet)
 	Sfx.play(get_parent(), "shot_player", global_position, -6.0)

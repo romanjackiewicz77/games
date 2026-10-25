@@ -8,6 +8,17 @@ var _maximum := 1.0
 var _bar: Control
 var _label: Label
 var _message: Label
+var _stats: Label
+var _countdown: Label
+
+
+func set_stats(wins: int, wave: int, damage: float) -> void:
+	_stats.text = "Wygrane walki: %d   Fala: %d   Obrażenia: %.1f" % [wins, wave, damage]
+
+
+func show_countdown(text: String) -> void:
+	_countdown.text = text
+	_countdown.visible = text != ""
 
 
 func _ready() -> void:
@@ -20,6 +31,18 @@ func _ready() -> void:
 	_label = Label.new()
 	_label.position = Vector2(28, 19)
 	add_child(_label)
+
+	_stats = Label.new()
+	_stats.position = Vector2(20, 48)
+	add_child(_stats)
+
+	_countdown = Label.new()
+	_countdown.visible = false
+	_countdown.add_theme_font_size_override("font_size", 40)
+	_countdown.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_countdown.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_countdown.position.y = 60
+	add_child(_countdown)
 
 	_message = Label.new()
 	_message.visible = false

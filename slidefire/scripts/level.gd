@@ -11,6 +11,13 @@ var _wall_rects: Array[Rect2i] = []
 var _furniture_rects: Array[Rect2i] = []
 var _meta := {}
 var _astar := AStarGrid2D.new()
+var _player: Player
+var _hud: Hud
+var _director: Director
+var _spawn_points: Array[Vector2] = []
+var _wave := 0
+var _wins := 0
+var _alive := 0
 
 ## Pokazuje kolizje (ściany/meble) do debugowania; domyślnie niewidoczne.
 @export var show_collisions := false
@@ -47,17 +54,74 @@ func _ready() -> void:
 	var player := Player.new()
 	player.position = _find_start()
 	add_child(player)
-	var hud := Hud.new()
-	add_child(hud)
-	hud.bind(player)
+	_player = player
+	_hud = Hud.new()
+	add_child(_hud)
+	_hud.bind(player)
 	_build_navigation()
-	for spot in _find_all("E"):
+	_director = Director.new()
+	add_child(_director)
+	_spawn_points = _find_all("E")
+	queue_redraw()
+	_start_wave()
+
+
+func _start_wave() -> void:
+	if _spawn_points.is_empty():
+		push_warning("Mapa nie ma punktów pojawiania się przeciwników (E).")
+		return
+	_wave += 1
+	_director.hide_spots.clear()
+	_hud.set_stats(_wins, _wave, _player.bullet_damage)
+	for i in _wave:
+		var spot := _spawn_points[i % _spawn_points.size()]
+		if i >= _spawn_points.size():
+			spot = _free_spot_near(spot)
 		var enemy := Enemy.new()
 		enemy.position = spot
 		enemy.level = self
-		enemy.player = player
+		enemy.player = _player
+		enemy.director = _director
 		add_child(enemy)
-	queue_redraw()
+		_director.register(enemy)
+		_alive += 1
+		enemy.died.connect(_on_enemy_died)
+
+
+func _free_spot_near(spot: Vector2) -> Vector2:
+	for attempt in 40:
+		var p := spot + Vector2.from_angle(randf() * TAU) * randf_range(24.0, 6.0 * tile)
+		if is_free(p) and not _enemy_near(p, 32.0):
+			return p
+	return spot
+
+
+func _enemy_near(p: Vector2, radius: float) -> bool:
+	for e in _director.enemies:
+		if is_instance_valid(e) and e.position.distance_to(p) < radius:
+			return true
+	return false
+
+
+func _on_enemy_died() -> void:
+	_alive -= 1
+	if _alive > 0:
+		return
+	_wins += 1
+	_player.on_victory()
+	_hud.set_stats(_wins, _wave, _player.bullet_damage)
+	for sec in range(5, 0, -1):
+		_hud.show_countdown("Następna fala za %d" % sec)
+		await get_tree().create_timer(1.0).timeout
+		if not is_inside_tree() or _player.health <= 0.0:
+			return
+	_hud.show_countdown("")
+	_start_wave()
+
+
+func is_free(p: Vector2) -> bool:
+	var t := Vector2i((p / tile).floor())
+	return _astar.is_in_boundsv(t) and not _astar.is_point_solid(t)
 
 
 func _find_all(ch: String) -> Array[Vector2]:
@@ -117,7 +181,7 @@ func line_clear(a: Vector2, b: Vector2) -> bool:
 
 
 ## Kryjówka dla przeciwnika: daleko od zagrożenia, w kącie, najlepiej poza jego linią widzenia.
-func find_hiding_spot(from: Vector2, threat: Vector2) -> Vector2:
+func find_hiding_spot(from: Vector2, threat: Vector2, taken: Array[Vector2] = []) -> Vector2:
 	var scored: Array = []
 	for y in range(2, _rows.size() - 2, 2):
 		for x in range(2, _rows[y].length() - 2, 2):
@@ -138,6 +202,9 @@ func find_hiding_spot(from: Vector2, threat: Vector2) -> Vector2:
 		if find_path(from, p).is_empty():
 			continue
 		var score: float = scored[i][0] + (0.0 if line_clear(threat, p) else 400.0)
+		for t in taken:
+			if t.distance_to(p) < 100.0:
+				score -= 250.0
 		if score > best_score:
 			best_score = score
 			best = p

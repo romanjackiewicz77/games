@@ -21,6 +21,7 @@ const BAR_SIZE := Vector2(40, 6)
 var health := 100.0
 var level: Level
 var player: Player
+var director: Director
 
 var _cooldown := 0.5
 var _path := PackedVector2Array()
@@ -80,6 +81,7 @@ func _physics_process(delta: float) -> void:
 	rotation = lerp_angle(rotation, to_player.angle(), minf(1.0, 12.0 * delta))
 
 	var desired := _retreat_move(delta) if _is_low() else _combat_move(to_player, dist, los, delta)
+	desired = (desired + _separation()).limit_length(1.0)
 
 	var dodge := _dodge_vector()
 	if dodge != Vector2.ZERO:
@@ -93,7 +95,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	_cooldown -= delta
-	if los and _cooldown <= 0.0 and dist <= max_shoot_distance:
+	if los and _cooldown <= 0.0 and dist <= max_shoot_distance and director.can_fire(self):
 		_shoot(to_player)
 		_cooldown = fire_interval * randf_range(0.9, 1.3)
 
@@ -103,7 +105,13 @@ func _combat_move(to_player: Vector2, dist: float, los: bool, delta: float) -> V
 		return _follow_path_to(player.global_position, delta)
 	if dist < preferred_distance - 100.0:
 		return -to_player.normalized()
-	# Na dystansie krąży wokół gracza, żeby trudniej było go trafić.
+	# Zajmuje własną pozycję wokół gracza (inną niż koledzy), jeśli widać stamtąd gracza.
+	var slot := player.global_position + Vector2.from_angle(director.slot_angle(self)) * preferred_distance
+	if level.is_free(slot) and level.line_clear(player.global_position, slot):
+		if global_position.distance_to(slot) > 25.0:
+			return _follow_path_to(slot, delta)
+		return Vector2.ZERO
+	# Inaczej krąży, żeby trudniej było go trafić.
 	_strafe_timer -= delta
 	if _strafe_timer <= 0.0 or get_slide_collision_count() > 0:
 		_strafe_dir = -_strafe_dir
@@ -111,9 +119,22 @@ func _combat_move(to_player: Vector2, dist: float, los: bool, delta: float) -> V
 	return to_player.normalized().orthogonal() * _strafe_dir * 0.7
 
 
+# Odpychanie od innych przeciwników, żeby się nie zlepiali.
+func _separation() -> Vector2:
+	var push := Vector2.ZERO
+	for other in director.enemies:
+		if other == self or not is_instance_valid(other):
+			continue
+		var d := global_position - other.global_position
+		if d.length() < 45.0 and d != Vector2.ZERO:
+			push += d.normalized() * (45.0 - d.length()) / 45.0
+	return push
+
+
 func _retreat_move(delta: float) -> Vector2:
 	if not _has_hide_spot:
-		_hide_spot = level.find_hiding_spot(global_position, player.global_position)
+		_hide_spot = level.find_hiding_spot(global_position, player.global_position, director.hide_spots)
+		director.hide_spots.append(_hide_spot)
 		_has_hide_spot = true
 	if global_position.distance_to(_hide_spot) < 14.0:
 		return Vector2.ZERO

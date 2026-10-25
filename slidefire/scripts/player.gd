@@ -26,6 +26,14 @@ func take_damage(amount: float) -> void:
 		died.emit()
 
 
+## Nagroda za wygraną walkę: +5% maksymalnego życia, pełne leczenie i +10% obrażeń.
+func on_victory() -> void:
+	max_health *= 1.05
+	bullet_damage *= 1.10
+	health = max_health
+	health_changed.emit(health, max_health)
+
+
 func heal(amount: float) -> void:
 	if health <= 0.0:
 		return

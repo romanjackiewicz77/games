@@ -54,3 +54,7 @@ Gracz ma 100 punktów życia (pasek w lewym górnym rogu). `Player.take_damage(x
 ### Przeciwnicy
 
 Przeciwnik pojawia się w miejscach oznaczonych czerwienią (`#FF0000`) w `*_edit.jpg` (znak `E` w mapie). Idzie do gracza (A*), strzela z rozrzutem i unika pocisków gracza. Ma 100 punktów życia (pasek nad głową). Poniżej 25% życia ucieka do jednej kryjówki (kąt poza linią widzenia gracza) i broni się stamtąd. Parametry są w ``scripts/enemy.gd``.
+
+### Fale
+
+Po pokonaniu wszystkich przeciwników: +1 do wygranych walk, gracz odzyskuje całe życie, ma +5% maksymalnego życia i +10% obrażeń, po 5 s odliczania startuje kolejna fala (o jednego przeciwnika więcej). Przeciwnicy koordynują się (`scripts/director.gd`): zajmują różne pozycje wokół gracza i strzelają naprzemiennie albo wszyscy naraz w salwach (tryb zmienia się co 5-9 s).

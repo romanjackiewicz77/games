@@ -28,11 +28,11 @@ func _draw() -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	var from: Vector2 = player.global_position - global_position
-	draw_line(from, Vector2.ZERO, Color(1, 1, 1, 0.16), 1.0)
-	var c := Color(1, 1, 1, 0.85)
+	draw_line(from, Vector2.ZERO, Color(Bullet.PLAYER_COLOR, 0.2), 1.0)
+	var c := Color(Bullet.PLAYER_COLOR, 0.9)
 	draw_arc(Vector2.ZERO, 9.0, 0.0, TAU, 24, c, 1.5)
 	draw_line(Vector2(-15, 0), Vector2(-5, 0), c, 1.5)
 	draw_line(Vector2(5, 0), Vector2(15, 0), c, 1.5)
 	draw_line(Vector2(0, -15), Vector2(0, -5), c, 1.5)
 	draw_line(Vector2(0, 5), Vector2(0, 15), c, 1.5)
-	draw_circle(Vector2.ZERO, 1.5, Color(1, 0.3, 0.3, 0.95))
+	draw_circle(Vector2.ZERO, 1.5, c)

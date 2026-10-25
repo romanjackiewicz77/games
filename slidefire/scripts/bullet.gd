@@ -5,6 +5,8 @@ extends Area2D
 const FURNITURE_STOP_CHANCE := 0.35
 const FURNITURE_ENERGY_LOSS := 0.5
 const MIN_ENERGY := 0.3
+## Kolor pocisków gracza (używany też przez celownik).
+const PLAYER_COLOR := Color.RED
 
 var velocity := Vector2.ZERO
 var lifetime := 2.0
@@ -13,7 +15,7 @@ var energy := 1.0
 var damage := 10.0
 ## Warstwa kolizji postaci, którą pocisk może zranić (2 = gracz, 8 = przeciwnik).
 var target_layer := 8
-var color := Color.RED
+var color := PLAYER_COLOR
 var _hit_shapes := {}
 
 

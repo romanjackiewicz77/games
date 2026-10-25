@@ -138,8 +138,9 @@ func _wave_kinds(wave: int) -> Array:
 
 
 func _free_spot_near(spot: Vector2) -> Vector2:
-	for attempt in 40:
-		var p := spot + Vector2.from_angle(randf() * TAU) * randf_range(24.0, 6.0 * tile)
+	for attempt in 120:
+		var reach := 6.0 + attempt / 10.0
+		var p := spot + Vector2.from_angle(randf() * TAU) * randf_range(24.0, reach * tile)
 		if is_free(p) and not _enemy_near(p, 32.0) and not find_path(spot, p).is_empty():
 			return p
 	return spot
@@ -176,7 +177,9 @@ func nearest_open_spot(p: Vector2) -> Vector2:
 	q.collision_mask = 1 | 4
 	if is_free(p) or (get_world_2d().direct_space_state.intersect_point(q).is_empty() and _in_map(p)):
 		return p
-	var c := _nearest_free(Vector2i((p / tile).floor()))
+	var t := Vector2i((p / tile).floor())
+	t = t.clamp(Vector2i.ZERO, Vector2i(_rows[0].length() - 1, _rows.size() - 1))
+	var c := _nearest_free(t)
 	if c.x < 0:
 		return p
 	return (Vector2(c) + Vector2(0.5, 0.5)) * tile

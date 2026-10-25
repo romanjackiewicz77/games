@@ -1,0 +1,20 @@
+# Godot 4+
+.godot/
+*.translation
+
+# Export
+export/
+build/
+*.apk
+*.aab
+*.exe
+*.pck
+
+# Mono / C#
+.mono/
+data_*/
+mono_crash.*.json
+
+# Editor
+.vscode/
+.idea/

@@ -14,6 +14,9 @@ build/
 .mono/
 data_*/
 mono_crash.*.json
+bin/
+obj/
+*.sln
 
 # Editor
 .vscode/

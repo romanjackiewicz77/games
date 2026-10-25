@@ -73,11 +73,13 @@ func _start_wave() -> void:
 	_wave += 1
 	_director.hide_spots.clear()
 	_hud.set_stats(_wins, _wave, _player.bullet_damage)
+	var kinds := _wave_kinds(_wave)
 	for i in _wave:
 		var spot := _spawn_points[i % _spawn_points.size()]
 		if i >= _spawn_points.size():
 			spot = _free_spot_near(spot)
 		var enemy := Enemy.new()
+		enemy.setup(kinds[i])
 		enemy.position = spot
 		enemy.level = self
 		enemy.player = _player
@@ -86,6 +88,26 @@ func _start_wave() -> void:
 		_director.register(enemy)
 		_alive += 1
 		enemy.died.connect(_on_enemy_died)
+
+
+## Skład fali: 1–4 amatorzy/średniacy (więcej amatorów), 5–9 amatorzy/średniacy + 1 zawodowiec,
+## 10–15 średniacy/zawodowcy (więcej średniaków), od 16 sami zawodowcy.
+func _wave_kinds(wave: int) -> Array:
+	var kinds := []
+	for i in wave:
+		var r := randf()
+		if wave >= 16:
+			kinds.append(Enemy.Kind.PRO)
+		elif wave >= 10:
+			kinds.append(Enemy.Kind.AVERAGE if r < 0.7 else Enemy.Kind.PRO)
+		elif wave >= 5:
+			kinds.append(Enemy.Kind.AVERAGE if r < 0.5 else Enemy.Kind.AMATEUR)
+		else:
+			kinds.append(Enemy.Kind.AMATEUR if r < 0.7 else Enemy.Kind.AVERAGE)
+	if wave >= 5 and wave < 10:
+		kinds[0] = Enemy.Kind.PRO
+	kinds.shuffle()
+	return kinds
 
 
 func _free_spot_near(spot: Vector2) -> Vector2:

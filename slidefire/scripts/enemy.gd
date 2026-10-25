@@ -4,6 +4,8 @@ extends CharacterBody2D
 signal health_changed(current: float, maximum: float)
 signal died
 
+enum Kind { AMATEUR, AVERAGE, PRO }
+
 @export var max_health := 100.0
 @export var speed := 190.0
 @export var fire_interval := 0.45
@@ -15,13 +17,39 @@ signal died
 @export var low_health_ratio := 0.25
 @export var max_shoot_distance := 700.0
 
-const RADIUS := 11.0
 const BAR_SIZE := Vector2(40, 6)
 
+## Parametry typów: prędkość, promień, kolor, szansa zapomnienia strzału, szansa strzału
+## w zwolnionym tempie, szansa uniku przed pociskiem, szansa dobrej kryjówki, odstęp strzałów.
+const KINDS := {
+	Kind.AMATEUR: {
+		"name": "amator", "speed": 150.0, "radius": 14.0, "color": Color(0.95, 0.8, 0.2),
+		"forget": 0.3, "slow": 0.3, "dodge": 0.0, "hide": 0.15, "interval": 0.8,
+	},
+	Kind.AVERAGE: {
+		"name": "średniak", "speed": 290.0, "radius": 12.0, "color": Color(0.95, 0.5, 0.15),
+		"forget": 0.15, "slow": 0.0, "dodge": 0.4, "hide": 0.85, "interval": 0.55,
+	},
+	Kind.PRO: {
+		"name": "zawodowiec", "speed": 320.0, "radius": 10.0, "color": Color(0.65, 0.15, 0.8),
+		"forget": 0.0, "slow": 0.0, "dodge": 0.75, "hide": 1.0, "interval": 0.4,
+	},
+}
+
+var kind := Kind.AMATEUR
+var radius := 11.0
+var body_color := Color(0.85, 0.25, 0.25)
+var forget_chance := 0.0
+var slow_chance := 0.0
+var dodge_chance := 0.5
+var hide_skill := 1.0
 var health := 100.0
 var level: Level
 var player: Player
 var director: Director
+
+var _dodge_seen := {}
+var _dodge_wanted := false
 
 var _cooldown := 0.5
 var _path := PackedVector2Array()
@@ -35,6 +63,19 @@ var _has_hide_spot := false
 var _bar: Node2D
 
 
+func setup(k: Kind) -> void:
+	kind = k
+	var p: Dictionary = KINDS[k]
+	speed = p["speed"]
+	radius = p["radius"]
+	body_color = p["color"]
+	forget_chance = p["forget"]
+	slow_chance = p["slow"]
+	dodge_chance = p["dodge"]
+	hide_skill = p["hide"]
+	fire_interval = p["interval"]
+
+
 func _ready() -> void:
 	health = max_health
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -42,7 +83,7 @@ func _ready() -> void:
 	collision_mask = 1 | 2 | 4 | 8
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
-	circle.radius = RADIUS
+	circle.radius = radius
 	shape.shape = circle
 	add_child(shape)
 	# Pasek życia nie obraca się razem z przeciwnikiem.
@@ -154,9 +195,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	_cooldown -= delta
-	if los and _cooldown <= 0.0 and dist <= max_shoot_distance and director.can_fire(self):
-		_shoot(to_player)
-		_cooldown = fire_interval * randf_range(0.9, 1.3)
+	if los and _cooldown <= 0.0 and dist <= max_shoot_distance and (kind == Kind.PRO or director.can_fire(self)):
+		if randf() >= forget_chance:
+			_shoot(to_player)
+		var slow := 2.5 if randf() < slow_chance else 1.0
+		_cooldown = fire_interval * slow * randf_range(0.9, 1.3)
 
 
 func _combat_move(to_player: Vector2, dist: float, los: bool, delta: float) -> Vector2:
@@ -192,12 +235,19 @@ func _separation() -> Vector2:
 
 func _retreat_move(delta: float) -> Vector2:
 	if not _has_hide_spot:
-		_hide_spot = level.find_hiding_spot(global_position, player.global_position, director.hide_spots)
+		_hide_spot = _pick_hide_spot()
 		director.hide_spots.append(_hide_spot)
 		_has_hide_spot = true
 	if global_position.distance_to(_hide_spot) < 14.0:
 		return Vector2.ZERO
 	return _follow_path_to(_hide_spot, delta)
+
+
+func _pick_hide_spot() -> Vector2:
+	if randf() < hide_skill:
+		return level.find_hiding_spot(global_position, player.global_position, director.hide_spots)
+	# Nieumiejętne chowanie: byle gdzie w pobliżu, często na widoku gracza.
+	return level._free_spot_near(global_position)
 
 
 func _follow_path_to(target: Vector2, delta: float) -> Vector2:
@@ -225,6 +275,14 @@ func _dodge_vector() -> Vector2:
 			continue
 		var closest := rel + b.velocity * t
 		if closest.length() < 30.0:
+			var id := b.get_instance_id()
+			if not _dodge_seen.has(id):
+				_dodge_seen[id] = true
+				if _dodge_seen.size() > 64:
+					_dodge_seen.clear()
+				_dodge_wanted = randf() < dodge_chance
+			if not _dodge_wanted:
+				return Vector2.ZERO
 			var side := b.velocity.orthogonal().normalized()
 			var sign := signf(closest.dot(side))
 			if sign == 0.0:
@@ -238,7 +296,7 @@ func _shoot(to_player: Vector2) -> void:
 	var lead := player.global_position + player.velocity * (to_player.length() / bullet_speed) * 0.7
 	var dir := (lead - global_position).normalized().rotated(deg_to_rad(randf_range(-aim_spread_deg, aim_spread_deg)))
 	var bullet := Bullet.new()
-	bullet.position = position + dir * (RADIUS + 12.0)
+	bullet.position = position + dir * (radius + 12.0)
 	bullet.velocity = dir * bullet_speed
 	bullet.damage = bullet_damage
 	bullet.target_layer = 2
@@ -247,12 +305,12 @@ func _shoot(to_player: Vector2) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, RADIUS, Color(0.85, 0.25, 0.25))
-	draw_line(Vector2.ZERO, Vector2(RADIUS + 12.0, 0.0), Color.BLACK, 5.0)
+	draw_circle(Vector2.ZERO, radius, body_color)
+	draw_line(Vector2.ZERO, Vector2(radius + 12.0, 0.0), Color.BLACK, 5.0)
 
 
 func _draw_bar() -> void:
-	var origin := Vector2(-BAR_SIZE.x / 2.0, -RADIUS - 18.0)
+	var origin := Vector2(-BAR_SIZE.x / 2.0, -radius - 18.0)
 	_bar.draw_rect(Rect2(origin, BAR_SIZE), Color(0, 0, 0, 0.7))
 	var ratio := clampf(health / max_health, 0.0, 1.0)
 	var color := Color(0.2, 0.8, 0.3).lerp(Color(0.9, 0.15, 0.15), 1.0 - ratio)

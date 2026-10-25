@@ -41,7 +41,7 @@ Kafelek mapy = 12 cm w rzeczywistości. Wymagania: Python 3 i `pip install -r to
 
 ### Ręczne poprawki (kolorowanie podglądu)
 
-Pomaluj kopię `maps/map_01_preview.png` (np. jako `map_01_edit.png`) czystymi kolorami: zielony `#00FF00` = ściana, fioletowy `#FF00FF` = mebel (`F`: blokuje ruch, pociski przebijają z 15% szansą zatrzymania i tracą energię), żółty `#FFFF00` = podłoga. Potem: `python tools/apply_edits.py maps/map_01.txt maps/map_01_edit.png`.
+Pomaluj kopię `maps/map_01_preview.png` (np. jako `map_01_edit.png`) czystymi kolorami: zielony `#00FF00` = ściana, fioletowy `#FF00FF` = mebel (`F`: blokuje ruch, pociski przebijają z 35% szansą zatrzymania i tracą energię), żółty `#FFFF00` = podłoga. Potem: `python tools/apply_edits.py maps/map_01.txt maps/map_01_edit.png`.
 
 ### Mapa z pomalowanego rzutu (map_02)
 

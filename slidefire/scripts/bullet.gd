@@ -2,8 +2,8 @@ class_name Bullet
 extends Area2D
 
 ## Szansa zatrzymania pocisku na meblu oraz mnożnik energii po przebiciu mebla.
-const FURNITURE_STOP_CHANCE := 0.15
-const FURNITURE_ENERGY_LOSS := 0.7
+const FURNITURE_STOP_CHANCE := 0.35
+const FURNITURE_ENERGY_LOSS := 0.5
 const MIN_ENERGY := 0.3
 
 var velocity := Vector2.ZERO
